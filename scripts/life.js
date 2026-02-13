@@ -9,6 +9,7 @@
     let grid, nextGrid; // 0 = dead, 1+ = age (generations alive)
     let generation = 0;
     let offsetX = 0, offsetY = 0; // centering offset in pixels
+    let logicalWidth = 0, logicalHeight = 0; // for sharp canvas (DPR) drawing
 
     // Dead zones: array of {r1, r2, c1, c2} rectangles where cells cannot live
     let deadZones = [];
@@ -92,9 +93,14 @@
             canvas.style.clipPath = '';
         }
 
-        canvas.width = w;
-        canvas.height = h;
+        logicalWidth = w;
+        logicalHeight = h;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        canvas.style.width = w + 'px';
         canvas.style.height = h + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         const newCols = Math.floor(w / CELL);
         const newRows = Math.floor(h / CELL);
         offsetX = Math.floor((w - newCols * CELL) / 2);
@@ -160,7 +166,7 @@
     const GAP = 1; // 1px inset per side for white outline
 
     function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, logicalWidth, logicalHeight);
 
         // Find the N youngest cells (one per case colour)
         const numColours = caseColours.length;
