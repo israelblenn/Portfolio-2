@@ -1,0 +1,67 @@
+{
+  "site": {
+    "title": "Israel Blennerhassett"
+  },
+  "home": {
+    "headline": "Independent design practice focused on websites and brand identity.",
+    "description": "I worship at the intersection of information architecture and pure typography. And I do donuts at the intersection of maximalism and grunge."
+  },
+  "navigation": {
+    "contentsLabel": "Contents",
+    "items": [
+      {
+        "label": "Home",
+        "emphasized": true
+      },
+      {
+        "label": "Work",
+        "emphasized": true,
+        "children": [
+          "The Harbour Agency",
+          "Mark Bo Chu",
+          "Lismore Baptist Church",
+          "Light Pollution Simulator"
+        ]
+      },
+      {
+        "label": "Contact",
+        "emphasized": false
+      }
+    ]
+  },
+  "contact": {
+    "email": "hi@israelblennerhassett.com",
+    "phone": "+61 422 544 376",
+    "tabLabel": "Contact"
+  },
+  "cases": [
+    {
+      "name": "The Harbour Agency",
+      "description": "Building a website for a leading Sydney music agency designed around a unique modular page structure. It features a highly interactive roster brimming with dynamic animations that contrast bold Swiss-style geometry against a minimalist slate backdrop.",
+      "link": "#",
+      "image": "assets/placeholder.png",
+      "colour": "#FF4338"
+    },
+    {
+      "name": "Mark Bo Chu",
+      "description": "Designing and building a personal website and shop for Melbourne-based artist, writer and complexity scientist. Featuring novel layouts and engaging interactive experiences, grounded in minimalist design principles and UX sensibilities.",
+      "link": "#",
+      "image": "assets/placeholder.png",
+      "colour": "#0051FF"
+    },
+    {
+      "name": "Lismore Baptist",
+      "description": "Re-imagining the visual identity of a local church — which involved creating a feature-rich website among multiple other pieces of branded material. The site includes a custom built database and platform that allows church members to stream archived sermons online.",
+      "link": "#",
+      "image": "assets/placeholder.png",
+      "colour": "#FFBA3A"
+    },
+    {
+      "name": "Light Pollution Simulator",
+      "description": "A first-of-its-kind light pollution simulation web app designed and produced in collaboration with two other design students for the Murry River International Dark Sky Reserve. Made possible through the integration of multiple 3rd party APIs.",
+      "link": "#",
+      "image": "assets/placeholder.png",
+      "colour": "#697898"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title data-content="site.title"></title> <!-- Hardcode for seo? -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/global.css">
+    <link rel="stylesheet" href="styles/send-btn.css">
+</head>
+<body>
+    <div class="page-slider-viewport">
+        <div class="page-slider">
+            <section class="page page-home">
+                <div class="home">
+                    <p data-content="home.headline" data-content-emphasis="home.description"></p>
+                    <div class="contents">
+                        Contents
+                        <ul>
+                            <li><em>Home</em></li>
+                            <li><em>Work</em>
+                                <ul data-content-list="cases" data-content-list-field="name">
+                                </ul>
+                            </li>
+                            <li>Contact</li>
+                        </ul>
+                    </div>
+                
+                    <div class="contacts">
+                        <span data-content="contact.email"></span>
+                        <span data-content="contact.phone"></span>
+                    </div>
+                </div>
+
+                <div class="contact-tab" data-content="contact.tabLabel">
+                    Contact
+                </div>
+                <div class="contact">
+                    <form action="https://api.web3forms.com/submit" method="POST">
+                        <input type="hidden" name="access_key" value="486a8de8-900f-4aa2-9f28-ac3704e05838">
+                        <label for="name">Name</label>
+                        <input type="text" name="name" required>
+                        <label for="email">Email Address</label>
+                        <input type="email" name="email" required>
+                        <label for="message">Message</label>
+                        <textarea name="message" required></textarea>
+                        <button type="submit" id="send-btn">
+                            <span class="btn-text">send</span>
+                            <span class="btn-text-white-wrapper">
+                                <span class="btn-text-white">send</span>
+                            </span>
+                        </button>
+                    </form>
+                </div>
+            </section>
+            <div class="nav-bar" id="nav-bar"></div>
+            <section class="page page-work">
+                <div class="work-cases" id="work-cases" aria-label="Work"></div>
+            </section>
+        </div>
+    </div>
+
+    <script src="scripts/load-content.js"></script>
+    <script src="scripts/swipe-navigation.js"></script>
+    <script src="scripts/send-btn.js"></script>
+</body>
+</html>
