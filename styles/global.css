@@ -79,6 +79,7 @@ label {
 }
 
 .page-slider-viewport {
+    position: relative;
     width: 100vw;
     height: 100vh;
     overflow-x: hidden;
@@ -100,33 +101,40 @@ label {
     flex-direction: column;
 }
 
-.home {
-    padding: 2rem;
-    margin-bottom: 5rem;
+.page-home {
+    position: relative;
 }
 
-.contents{
-    margin-block: 5rem;
+.home {
+    position: relative;
+    z-index: 1;
+    padding: 2rem;
+    /* margin-bottom: 5rem; */
 }
 
 .contacts {
     display: grid;
+    margin-top: 3rem;
+    margin-bottom: 48rem;
 }
 
 .contact {
+    position: relative;
+    z-index: 1;
     flex: 1 0 auto;
     padding: 3rem 2rem;
     background-color: hsl(0 0 90);
 }
 
 .contact-tab {
+    position: relative;
+    z-index: 1;
     width: fit-content;
     height: 4rem;
     padding-inline: 1rem;
     background-color: hsl(0 0 90);
     display: flex;
     align-items: center;
-
 }
 
 .page-work {
@@ -161,7 +169,7 @@ label {
     position: sticky;
     top: 0;
     align-self: stretch;
-    background-color: hsl(0 0 90);
+    /* background-color: hsl(0 0 90); */
     display: flex;
     flex-direction: column;
 }
@@ -170,7 +178,7 @@ label {
     flex: 0 0 4rem;
     width: 4rem;
     height: 4rem;
-    background-color: #fff;
+    /* background-color: #fff; */
     display: flex;
     align-items: center;
     justify-content: center;

@@ -31,7 +31,7 @@ button {
     background-color: hsl(0 0 80);
     border: 0;
     padding: 1rem 2rem;
-    width: 64px;
+    width: 72px;
     align-self: flex-end;
     cursor: pointer;
     transition: color 0.2s ease, background-color 0.2s ease;
@@ -52,8 +52,13 @@ button {
         z-index: 2;
         color: #000;
         transition: opacity 0.5s ease;
-        &.fade-out { opacity: 0; }
-    }
+
+        font-family: 'Instrument Sans';
+        font-weight: 500;
+        font-size: 2rem;
+
+
+        &.fade-out { opacity: 0; };    }
 
     .btn-text-white-wrapper {
         position: absolute;
@@ -73,6 +78,9 @@ button {
         align-items: center;
         justify-content: center;
         color: white;
+        font-family: 'Instrument Sans', Helvetica, sans-serif;
+        font-weight: 500;
+        font-size: 2rem;
         transform: translateX(0);
         transition: transform 0.2s ease;
     }

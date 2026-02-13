@@ -9,26 +9,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles/global.css">
+    <link rel="stylesheet" href="styles/life.css">
     <link rel="stylesheet" href="styles/send-btn.css">
 </head>
 <body>
     <div class="page-slider-viewport">
         <div class="page-slider">
             <section class="page page-home">
+                <canvas id="life"></canvas>
                 <div class="home">
                     <p data-content="home.headline" data-content-emphasis="home.description"></p>
-                    <div class="contents">
-                        Contents
-                        <ul>
-                            <li><em>Home</em></li>
-                            <li><em>Work</em>
-                                <ul data-content-list="cases" data-content-list-field="name">
-                                </ul>
-                            </li>
-                            <li>Contact</li>
-                        </ul>
-                    </div>
-                
                     <div class="contacts">
                         <span data-content="contact.email"></span>
                         <span data-content="contact.phone"></span>
@@ -63,6 +53,7 @@
         </div>
     </div>
 
+    <script src="scripts/life.js"></script>
     <script src="scripts/load-content.js"></script>
     <script src="scripts/swipe-navigation.js"></script>
     <script src="scripts/send-btn.js"></script>
