@@ -15,7 +15,7 @@ body {
     color: #000;
     background-color: #fff;
     overflow: hidden;
-    height: 100vh;
+    /* height: 100svh; */
 }
 
 ::selection {
@@ -81,7 +81,7 @@ label {
 .page-slider-viewport {
     position: relative;
     width: 100vw;
-    height: 100vh;
+    height: 100svh;
     overflow-x: hidden;
     overflow-y: auto;
     touch-action: pan-y;
@@ -96,7 +96,7 @@ label {
 
 .page {
     flex: 0 0 calc(100vw - 4rem);
-    min-height: 100vh;
+    min-height: 100svh;
     display: flex;
     flex-direction: column;
 }
@@ -165,7 +165,7 @@ label {
 .nav-bar {
     flex: 0 0 4rem;
     width: 4rem;
-    height: 100vh;
+    height: 100svh;
     position: sticky;
     top: 0;
     align-self: stretch;
