@@ -30,7 +30,7 @@
         var viewport = document.querySelector('.page-slider-viewport');
         if (!navBar || navCases.length !== workCases.length) return;
 
-        // Fixed heights of home and contact buttons
+        // Fixed heights of home and contact. Purple takes 0 when small, up to 100px when large (flex).
         var homeBtnHeight = homeBtn ? Math.ceil(homeBtn.getBoundingClientRect().height) : 0;
         var contactBtnHeight = contactBtn ? Math.ceil(contactBtn.getBoundingClientRect().height) : 0;
         var fixedHeight = homeBtnHeight + contactBtnHeight;
@@ -47,6 +47,8 @@
         var ticking = false;
 
         function sync() {
+            var vv = window.visualViewport;
+            if (vv && vv.height > 0) { navBar.style.height = Math.round(vv.height) + 'px'; }
             var navBarTop = navBar.getBoundingClientRect().top;
             var remaining = Math.max(0, navBar.clientHeight - fixedHeight - sumContent);
             var currentTop = homeBtnHeight;
@@ -88,6 +90,7 @@
 
         viewport.addEventListener('scroll', requestSync);
         window.addEventListener('resize', requestSync);
+        if (window.visualViewport) { window.visualViewport.addEventListener('resize', requestSync); window.visualViewport.addEventListener('scroll', requestSync); }
         new ResizeObserver(requestSync).observe(workCases[0].parentElement);
         requestSync();
     }

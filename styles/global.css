@@ -81,8 +81,7 @@ label {
 .page-slider-viewport {
     position: relative;
     width: 100vw;
-    height: calc(var(--vh, 1vh) * 100); /* JS fallback for old mobile (viewport-height.js) */
-    height: 100dvh; /* dynamic viewport: updates when mobile browser UI shows/hides */
+    height: 100dvh;
     overflow-x: hidden;
     overflow-y: auto;
     touch-action: pan-y;
@@ -97,7 +96,6 @@ label {
 
 .page {
     flex: 0 0 calc(100vw - 4rem);
-    min-height: 100svh;
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
@@ -112,6 +110,13 @@ label {
     z-index: 1;
     padding: 2rem;
     /* margin-bottom: 5rem; */
+    user-select: text;
+    pointer-events: none;
+}
+
+.home p,
+.home .contacts {
+    pointer-events: auto;
 }
 
 .contacts {
@@ -167,14 +172,25 @@ label {
 .nav-bar {
     flex: 0 0 4rem;
     width: 4rem;
-    height: calc(var(--vh, 1vh) * 100);
-    height: 100dvh; /* responds to mobile browser UI show/hide */
+    height: 100dvh;
     position: sticky;
     top: 0;
     align-self: stretch;
     /* background-color: hsl(0 0 90); */
     display: flex;
     flex-direction: column;
+    transition: height 0.1s ease-out;
+}
+
+.nav-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100lvh;
+    background: linear-gradient(to bottom, transparent 0, transparent 64px, hsl(0 0 90) 64px);
+    z-index: -1;
 }
 
 .nav-bar-home {
@@ -207,4 +223,5 @@ label {
     padding-inline: 1rem;
     padding-block: 5px;
     cursor: pointer;
+    padding-bottom: 2.5rem;
 }
