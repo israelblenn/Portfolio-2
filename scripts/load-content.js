@@ -86,10 +86,7 @@
             })(i);
         }
 
-        viewport.addEventListener('scroll', function() {
-            sync(); // run immediately so nav aligns in the same frame as scroll
-            requestSync();
-        }, { passive: true });
+        viewport.addEventListener('scroll', requestSync);
         window.addEventListener('resize', requestSync);
         new ResizeObserver(requestSync).observe(workCases[0].parentElement);
         requestSync();
