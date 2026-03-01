@@ -47,8 +47,9 @@
         var ticking = false;
 
         function sync() {
-            var vv = window.visualViewport;
-            if (vv && vv.height > 0) { navBar.style.height = Math.round(vv.height) + 'px'; }
+            // Use layout viewport height so the nav bar doesn't shrink when the keyboard opens
+            var layoutHeight = document.documentElement.clientHeight;
+            if (layoutHeight > 0) { navBar.style.height = Math.round(layoutHeight) + 'px'; }
             var navBarTop = navBar.getBoundingClientRect().top;
             var remaining = Math.max(0, navBar.clientHeight - fixedHeight - sumContent);
             var currentTop = homeBtnHeight;
