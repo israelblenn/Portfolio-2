@@ -261,7 +261,17 @@
                 });
             }
 
-            initNavBarSync();
+            // Run nav sync only after fonts have loaded so measured heights use the
+            // actual font (Instrument Sans). Otherwise fallback font metrics are
+            // cached and menu items overflow when the custom font loads.
+            function runNavBarSync() {
+                initNavBarSync();
+            }
+            if (document.fonts && typeof document.fonts.ready !== 'undefined') {
+                document.fonts.ready.then(runNavBarSync);
+            } else {
+                runNavBarSync();
+            }
         })
         .catch(function(error) {
             console.error('Error loading content:', error);
