@@ -78,7 +78,8 @@
             }
         }
 
-        // Click a nav item to navigate to work page and scroll its case to the top
+        // Click a nav item to navigate to work page and scroll its case toward the top
+        // (capped so we never scroll past content — avoids white gap on iOS)
         for (var i = 0; i < navCases.length; i++) {
             (function(index) {
                 navCases[index].addEventListener('click', function() {
@@ -88,7 +89,11 @@
                     }
                     var caseTop = workCases[index].getBoundingClientRect().top;
                     var viewportTop = viewport.getBoundingClientRect().top;
-                    viewport.scrollBy({ top: caseTop - viewportTop, behavior: 'smooth' });
+                    var delta = caseTop - viewportTop;
+                    var maxScrollTop = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
+                    var targetScrollTop = viewport.scrollTop + delta;
+                    var cappedScrollTop = Math.min(Math.max(0, targetScrollTop), maxScrollTop);
+                    viewport.scrollTo({ top: cappedScrollTop, behavior: 'smooth' });
                 });
                 navCases[index].style.cursor = 'pointer';
             })(i);
@@ -241,13 +246,17 @@
                     if (contactTab && viewport) {
                         var tabTop = contactTab.getBoundingClientRect().top;
                         var viewportTop = viewport.getBoundingClientRect().top;
-                        viewport.scrollBy({ top: tabTop - viewportTop, behavior: 'smooth' });
+                        var delta = tabTop - viewportTop;
+                        var maxScrollTop = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
+                        var targetScrollTop = viewport.scrollTop + delta;
+                        var cappedScrollTop = Math.min(Math.max(0, targetScrollTop), maxScrollTop);
+                        viewport.scrollTo({ top: cappedScrollTop, behavior: 'smooth' });
                     }
                 });
                 navBar.appendChild(contactBtn);
             }
 
-            // Clicking the contact tab scrolls it to the top of the viewport
+            // Clicking the contact tab scrolls it toward the top (capped to avoid overscroll on iOS)
             var contactTab = document.querySelector('.contact-tab');
             if (contactTab) {
                 contactTab.style.cursor = 'pointer';
@@ -256,7 +265,11 @@
                     if (viewport) {
                         var tabTop = contactTab.getBoundingClientRect().top;
                         var viewportTop = viewport.getBoundingClientRect().top;
-                        viewport.scrollBy({ top: tabTop - viewportTop, behavior: 'smooth' });
+                        var delta = tabTop - viewportTop;
+                        var maxScrollTop = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
+                        var targetScrollTop = viewport.scrollTop + delta;
+                        var cappedScrollTop = Math.min(Math.max(0, targetScrollTop), maxScrollTop);
+                        viewport.scrollTo({ top: cappedScrollTop, behavior: 'smooth' });
                     }
                 });
             }
