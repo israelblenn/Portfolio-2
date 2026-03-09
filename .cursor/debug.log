@@ -1,0 +1,28 @@
+{"location":"load-content.js:desktop-case-click","message":"selection update","data":{"clickedIndex":1,"countBefore":1,"countAfterAdd":2,"countAfterRemove":1,"totalCases":4},"timestamp":1773017640374,"hypothesisId":"H1"}
+{"location":"load-content.js:desktop-case-click","message":"next frame selected count","data":{"countNextFrame":1},"timestamp":1773017640393,"hypothesisId":"H2"}
+{"location":"load-content.js:desktop-case-click","message":"selection update","data":{"clickedIndex":2,"countBefore":1,"countAfterAdd":2,"countAfterRemove":1,"totalCases":4},"timestamp":1773017641257,"hypothesisId":"H1"}
+{"location":"load-content.js:desktop-case-click","message":"next frame selected count","data":{"countNextFrame":1},"timestamp":1773017641271,"hypothesisId":"H2"}
+{"location":"load-content.js:desktop-case-click","message":"selection update","data":{"clickedIndex":1,"countBefore":1,"countAfterAdd":2,"countAfterRemove":1,"totalCases":4},"timestamp":1773017642625,"hypothesisId":"H1"}
+{"location":"load-content.js:desktop-case-click","message":"next frame selected count","data":{"countNextFrame":1},"timestamp":1773017642644,"hypothesisId":"H2"}
+{"location":"load-content.js:desktop-case-click","message":"selection update","data":{"clickedIndex":3,"countBefore":1,"countAfterAdd":2,"countAfterRemove":1,"totalCases":4},"timestamp":1773017644342,"hypothesisId":"H1"}
+{"location":"load-content.js:desktop-case-click","message":"next frame selected count","data":{"countNextFrame":1},"timestamp":1773017644353,"hypothesisId":"H2"}
+{"location":"load-content.js:desktop-case-click","message":"selection update","data":{"clickedIndex":2,"countBefore":1,"countAfterAdd":2,"countAfterRemove":1,"totalCases":4},"timestamp":1773017645527,"hypothesisId":"H1"}
+{"location":"load-content.js:desktop-case-click","message":"next frame selected count","data":{"countNextFrame":1},"timestamp":1773017645535,"hypothesisId":"H2"}
+{"location":"load-content.js:desktop-case-click","message":"selection update","data":{"clickedIndex":1,"countBefore":1,"countAfterAdd":2,"countAfterRemove":1,"totalCases":4},"timestamp":1773017646298,"hypothesisId":"H1"}
+{"location":"load-content.js:desktop-case-click","message":"next frame selected count","data":{"countNextFrame":1},"timestamp":1773017646305,"hypothesisId":"H2"}
+{"location":"load-content.js:desktop-case-click","message":"selection update","data":{"clickedIndex":0,"countBefore":1,"countAfterAdd":2,"countAfterRemove":1,"totalCases":4},"timestamp":1773017646929,"hypothesisId":"H1"}
+{"location":"load-content.js:desktop-case-click","message":"next frame selected count","data":{"countNextFrame":1},"timestamp":1773017646934,"hypothesisId":"H2"}
+{"location":"load-content.js:desktop-case-click","message":"selection update","data":{"clickedIndex":0,"countBefore":1,"countAfterAdd":1,"totalCases":4},"timestamp":1773017735058,"hypothesisId":"H1"}
+{"location":"load-content.js:desktop-case-click","message":"next frame selected count","data":{"countNextFrame":1},"timestamp":1773017735074,"hypothesisId":"H2"}
+{"location":"load-content.js:desktop-case-click","message":"selection update","data":{"clickedIndex":1,"countBefore":1,"countAfterAdd":1,"totalCases":4},"timestamp":1773017736468,"hypothesisId":"H1"}
+{"location":"load-content.js:desktop-case-click","message":"next frame selected count","data":{"countNextFrame":1},"timestamp":1773017736474,"hypothesisId":"H2"}
+{"location":"load-content.js:desktop-case-click","message":"selection update","data":{"clickedIndex":2,"countBefore":1,"countAfterAdd":1,"totalCases":4},"timestamp":1773017737927,"hypothesisId":"H1"}
+{"location":"load-content.js:desktop-case-click","message":"next frame selected count","data":{"countNextFrame":1},"timestamp":1773017737943,"hypothesisId":"H2"}
+{"location":"load-content.js:desktop-case-click","message":"selection update","data":{"clickedIndex":3,"countBefore":1,"countAfterAdd":1,"totalCases":4},"timestamp":1773017739287,"hypothesisId":"H1"}
+{"location":"load-content.js:desktop-case-click","message":"next frame selected count","data":{"countNextFrame":1},"timestamp":1773017739289,"hypothesisId":"H2"}
+{"location":"load-content.js:desktop-case-click","message":"selection update","data":{"clickedIndex":2,"countBefore":1,"countAfterAdd":1,"totalCases":4},"timestamp":1773017740605,"hypothesisId":"H1"}
+{"location":"load-content.js:desktop-case-click","message":"next frame selected count","data":{"countNextFrame":1},"timestamp":1773017740611,"hypothesisId":"H2"}
+{"location":"load-content.js:desktop-case-click","message":"selection update","data":{"clickedIndex":1,"countBefore":1,"countAfterAdd":1,"totalCases":4},"timestamp":1773017741285,"hypothesisId":"H1"}
+{"location":"load-content.js:desktop-case-click","message":"next frame selected count","data":{"countNextFrame":1},"timestamp":1773017741288,"hypothesisId":"H2"}
+{"location":"load-content.js:desktop-case-click","message":"selection update","data":{"clickedIndex":0,"countBefore":1,"countAfterAdd":1,"totalCases":4},"timestamp":1773017741902,"hypothesisId":"H1"}
+{"location":"load-content.js:desktop-case-click","message":"next frame selected count","data":{"countNextFrame":1},"timestamp":1773017741904,"hypothesisId":"H2"}

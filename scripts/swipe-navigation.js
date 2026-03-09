@@ -4,6 +4,21 @@ document.addEventListener('DOMContentLoaded', function () {
     var navBar = document.querySelector('.nav-bar');
     if (!viewport || !slider) return;
 
+    var DESKTOP_BREAKPOINT = '(min-width: 1024px)';
+
+    /** Move nav into slider (mobile: flows with swipe) or out to viewport (desktop: fixed at bottom). */
+    function placeNavForBreakpoint() {
+        if (!navBar) return;
+        var testBar = document.getElementById('test-expand-bar');
+        var isDesktop = window.matchMedia(DESKTOP_BREAKPOINT).matches;
+        if (isDesktop) {
+            if (navBar.parentNode !== viewport) viewport.appendChild(navBar);
+            if (testBar && testBar.parentNode !== viewport) viewport.insertBefore(testBar, navBar);
+        } else {
+            if (navBar.parentNode !== slider) slider.insertBefore(navBar, slider.children[1]);
+        }
+    }
+
     // 0 = home, 1 = work
     var activeIndex = 0;
     var startX = 0;
@@ -18,7 +33,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var slideWidth = 0;
     var pendingX = null;
     var rafId = null;
-
     var SNAP_RATIO = 0.25; // % of width dragged to trigger page change
     var VELOCITY_THRESHOLD = 0.5; // px/ms (500px/s)
     var DIRECTION_RATIO = 1.4; // horizontal must be dominant by this factor
@@ -46,10 +60,21 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    function updateNavLayout() {
+        if (window.matchMedia('(min-width: 1024px)').matches) {
+            navBarWidth = 0;
+            slideWidth = viewportWidth || getWidth();
+        } else {
+            navBarWidth = navBar ? navBar.getBoundingClientRect().width : 32;
+            slideWidth = (viewportWidth || getWidth()) - navBarWidth;
+        }
+    }
+
     function snapTo(index) {
+        var isDesktop = window.matchMedia(DESKTOP_BREAKPOINT).matches;
+        if (isDesktop) index = 0; /* work page removed on desktop */
         var w = viewportWidth || getWidth();
-        navBarWidth = navBar ? navBar.getBoundingClientRect().width : 32;
-        slideWidth = w - navBarWidth;
+        updateNavLayout();
         slider.style.transition = 'transform 0.32s cubic-bezier(0.2, 0.9, 0.2, 1)';
         setActiveIndex(index);
         setTranslateX(-activeIndex * slideWidth);
@@ -60,9 +85,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Ensure correct position after resize/orientation change
     window.addEventListener('resize', function () {
+        placeNavForBreakpoint();
         viewportWidth = getWidth();
-        navBarWidth = navBar ? navBar.getBoundingClientRect().width : 32;
-        slideWidth = viewportWidth - navBarWidth;
+        updateNavLayout();
+        if (window.matchMedia(DESKTOP_BREAKPOINT).matches) {
+            activeIndex = 0;
+            setActiveIndex(0);
+        }
         slider.style.transition = 'none';
         setTranslateX(-activeIndex * slideWidth);
         // Force reflow-ish timing so future snaps animate
@@ -102,7 +131,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         event.preventDefault();
 
-        var w = slideWidth || (viewportWidth - (navBar ? navBar.getBoundingClientRect().width : 32));
+        if (!slideWidth) updateNavLayout();
+        var w = slideWidth;
         var base = -activeIndex * w;
         var next = base + dx;
 
@@ -131,11 +161,12 @@ document.addEventListener('DOMContentLoaded', function () {
         var dt = Math.max(1, now - lastT);
         var v = (touch.clientX - lastX) / dt; // px/ms (positive = right)
 
-        var w = slideWidth || (viewportWidth - (navBar ? navBar.getBoundingClientRect().width : 32));
+        if (!slideWidth) updateNavLayout();
+        var w = slideWidth;
         var shouldGoNext = dx < -w * SNAP_RATIO || v < -VELOCITY_THRESHOLD;
         var shouldGoPrev = dx > w * SNAP_RATIO || v > VELOCITY_THRESHOLD;
 
-        if (activeIndex === 0 && shouldGoNext) snapTo(1);
+        if (activeIndex === 0 && shouldGoNext && !window.matchMedia(DESKTOP_BREAKPOINT).matches) snapTo(1);
         else if (activeIndex === 1 && shouldGoPrev) snapTo(0);
         else snapTo(activeIndex);
     }, { passive: true });
@@ -146,10 +177,10 @@ document.addEventListener('DOMContentLoaded', function () {
         snapTo(activeIndex);
     }, { passive: true });
 
-    // Initialize transform so dragging always starts from a known position
+    // Initialize: place nav for current breakpoint, then set slide position
+    placeNavForBreakpoint();
     viewportWidth = getWidth();
-    navBarWidth = navBar ? navBar.getBoundingClientRect().width : 32;
-    slideWidth = viewportWidth - navBarWidth;
+    updateNavLayout();
     snapTo(activeIndex);
 });
 

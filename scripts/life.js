@@ -68,8 +68,9 @@
 
     function resize() {
         const w = section ? section.clientWidth : window.innerWidth;
+        const contactVisible = contactTab && contactTab.offsetHeight > 0 && contactTab.offsetWidth > 0;
         let h;
-        if (contactTab) {
+        if (contactVisible) {
             const tabTop = contactTab.offsetTop;
             const tabBottom = tabTop + contactTab.offsetHeight;
             const tabRight = contactTab.offsetLeft + contactTab.offsetWidth;
@@ -86,7 +87,7 @@
             )`;
 
         } else if (section) {
-            h = section.scrollHeight;
+            h = section.clientHeight;
             canvas.style.clipPath = '';
         } else {
             h = window.innerHeight;
@@ -96,11 +97,11 @@
         logicalWidth = w;
         logicalHeight = h;
         const dpr = window.devicePixelRatio || 1;
-        canvas.width = w * dpr;
-        canvas.height = h * dpr;
+        canvas.width = Math.round(w * dpr);
+        canvas.height = Math.round(h * dpr);
         canvas.style.width = w + 'px';
         canvas.style.height = h + 'px';
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.setTransform(canvas.width / w, 0, 0, canvas.height / h, 0, 0);
         const newCols = Math.floor(w / CELL);
         const newRows = Math.floor(h / CELL);
         offsetX = Math.floor((w - newCols * CELL) / 2);
@@ -147,7 +148,7 @@
                 }
             }
         }
-        if (contactTab) {
+        if (contactVisible) {
             const tabTop = contactTab.offsetTop;
             const tabBottom = tabTop + contactTab.offsetHeight;
             const tabRight = contactTab.offsetLeft + contactTab.offsetWidth;
@@ -157,6 +158,23 @@
                 c1: 0,
                 c2: Math.ceil(tabRight / CELL),
             });
+        }
+
+        // Extra dead zones registered by other scripts (e.g. desktop description paragraph)
+        if (window.lifeExtraDeadZones) {
+            const sectionRect = section ? section.getBoundingClientRect() : { top: 0, left: 0 };
+            for (const r of window.lifeExtraDeadZones) {
+                const top    = r.top    - sectionRect.top;
+                const bottom = r.bottom - sectionRect.top;
+                const left   = r.left   - sectionRect.left;
+                const right  = r.right  - sectionRect.left;
+                deadZones.push({
+                    r1: Math.floor((top    - offsetY) / CELL),
+                    r2: Math.ceil ((bottom - offsetY) / CELL),
+                    c1: Math.floor((left   - offsetX) / CELL),
+                    c2: Math.ceil ((right  - offsetX) / CELL),
+                });
+            }
         }
 
         draw();
@@ -475,6 +493,7 @@
     // --- Init ---
     window.addEventListener('resize', resize);
     if (section) new ResizeObserver(() => resize()).observe(section);
+    window.lifeRefreshDeadZones = resize;
     resize();
     play();
 })();
