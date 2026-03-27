@@ -169,13 +169,57 @@ canvas#life {
     padding: 2rem;
 }
 
-.work-case img {
+.work-case > img,
+.work-case > video,
+.work-case > .dither-video {
     display: block;
     width: calc(100% + 2rem);
     height: auto;
     margin-top: 2rem;
     margin-right: -2rem;
     margin-bottom: -2rem;
+}
+
+.dither-video {
+    position: relative;
+    overflow: hidden;
+}
+
+.dither-video-canvas {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    transition: opacity 280ms ease;
+}
+
+.dither-video > video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 280ms ease;
+}
+
+.dither-video > video.dither-video-fallback {
+    position: static;
+    width: 100%;
+    height: auto;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.dither-video.dither-video--disabled .dither-video-canvas {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.dither-video.dither-video--disabled > video {
+    opacity: 1;
 }
 
 /* Nav bar: in-flow on mobile (inside slider), fixed bottom on desktop (moved out by JS) */

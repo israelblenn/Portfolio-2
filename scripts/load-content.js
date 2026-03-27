@@ -158,12 +158,50 @@
                 }
             });
 
+            var shaderCases = [];
+            var selectedCaseIndex = null;
+
+            function syncNavSelectedState() {
+                var navItems = document.querySelectorAll('.nav-bar-case');
+                navItems.forEach(function(el, index) {
+                    if (index === selectedCaseIndex) {
+                        el.classList.add('nav-bar-case--selected');
+                    } else {
+                        el.classList.remove('nav-bar-case--selected');
+                    }
+                });
+            }
+
+            function selectCaseByIndex(selectedIndex) {
+                if (selectedCaseIndex === selectedIndex) {
+                    selectedCaseIndex = null;
+                } else {
+                    selectedCaseIndex = selectedIndex;
+                }
+                shaderCases.forEach(function(item, index) {
+                    if (!item || !item.wrapper ||
+                        typeof item.wrapper.setDitherEnabled !== 'function') return;
+                    item.wrapper.setDitherEnabled(index !== selectedCaseIndex);
+                });
+                syncNavSelectedState();
+            }
+
+            function clearCaseSelection() {
+                selectedCaseIndex = null;
+                shaderCases.forEach(function(item) {
+                    if (!item || !item.wrapper ||
+                        typeof item.wrapper.setDitherEnabled !== 'function') return;
+                    item.wrapper.setDitherEnabled(true);
+                });
+                syncNavSelectedState();
+            }
+
             // Populate Work page with case blocks
             var workCasesContainer = document.getElementById('work-cases');
             if (workCasesContainer && Array.isArray(content.cases)) {
                 workCasesContainer.innerHTML = '';
 
-                content.cases.forEach(function(caseItem) {
+                content.cases.forEach(function(caseItem, caseIndex) {
                     if (!caseItem || typeof caseItem !== 'object') return;
 
                     var card = document.createElement('div');
@@ -176,7 +214,38 @@
                     desc.textContent = caseItem.description || '';
                     card.appendChild(desc);
 
-                    if (caseItem.image) {
+                    if (caseItem.video) {
+                        var vid = document.createElement('video');
+                        vid.setAttribute('autoplay', '');
+                        vid.setAttribute('loop', '');
+                        vid.setAttribute('muted', '');
+                        vid.setAttribute('playsinline', '');
+                        vid.muted = true;
+                        var srcMp4 = document.createElement('source');
+                        srcMp4.src = caseItem.video;
+                        srcMp4.type = 'video/mp4';
+                        vid.appendChild(srcMp4);
+                        var webmPath = caseItem.video.replace(/\.mp4$/, '.webm');
+                        var srcWebm = document.createElement('source');
+                        srcWebm.src = webmPath;
+                        srcWebm.type = 'video/webm';
+                        vid.appendChild(srcWebm);
+                        if (typeof window.createDitheredVideoElement === 'function') {
+                            var shaderVideo = window.createDitheredVideoElement(vid, {
+                                gridSize: 2.0,
+                                pixelation: 2.0,
+                                tintHex: caseItem.colour || '#ffffff',
+                                tintStrength: 1.0
+                            });
+                            card.addEventListener('click', function() {
+                                selectCaseByIndex(caseIndex);
+                            });
+                            shaderCases.push({ card: card, wrapper: shaderVideo });
+                            card.appendChild(shaderVideo);
+                        } else {
+                            card.appendChild(vid);
+                        }
+                    } else if (caseItem.image) {
                         var img = document.createElement('img');
                         img.src = caseItem.image;
                         img.alt = '';
@@ -198,6 +267,7 @@
                 homeBtn.className = 'nav-bar-home';
                 homeBtn.textContent = '\u00BF';
                 homeBtn.addEventListener('click', function() {
+                    clearCaseSelection();
                     var viewport = document.querySelector('.page-slider-viewport');
                     if (window.snapToPage) {
                         window.snapToPage(0);
@@ -216,17 +286,11 @@
                         caseNav.style.backgroundColor = caseItem.colour;
                     }
                     caseNav.textContent = caseItem.name || '';
-                    if (index === 0) caseNav.classList.add('nav-bar-case--selected');
                     caseNav.style.cursor = 'pointer';
                     caseNav.addEventListener('click', function() {
+                        selectCaseByIndex(index);
                         var viewport = document.querySelector('.page-slider-viewport');
                         var workCases = document.querySelectorAll('.work-case');
-                        if (window.matchMedia('(min-width: 1024px)').matches) {
-                            navBar.querySelectorAll('.nav-bar-case').forEach(function(el) {
-                                el.classList.remove('nav-bar-case--selected');
-                            });
-                            caseNav.classList.add('nav-bar-case--selected');
-                        }
                         if (window.snapToPage) {
                             window.snapToPage(1);
                         }
@@ -249,6 +313,7 @@
                 contactBtn.textContent = 'Contact';
                 contactBtn.addEventListener('click', function() {
                     if (window.matchMedia('(min-width: 1024px)').matches) return; /* deactivated on desktop */
+                    clearCaseSelection();
                     var contactTab = document.querySelector('.contact-tab');
                     var viewport = document.querySelector('.page-slider-viewport');
                     if (window.snapToPage) {
@@ -278,6 +343,7 @@
                 testHome.textContent = '\u00BF';
                 testHome.style.cursor = 'pointer';
                 testHome.addEventListener('click', function() {
+                    clearCaseSelection();
                     if (window.snapToPage) window.snapToPage(0);
                     var viewport = document.querySelector('.page-slider-viewport');
                     if (viewport) viewport.scrollTo({ top: 0, behavior: 'smooth' });
