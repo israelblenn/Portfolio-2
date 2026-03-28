@@ -416,6 +416,15 @@
     function isInteractive(el) {
         while (el && el !== document.body) {
             if (el === canvas) return false;
+            if (
+                el.id === 'desktop-case-preview' ||
+                (el.classList && (
+                    el.classList.contains('desktop-case-preview-layer') ||
+                    el.classList.contains('desktop-case-preview-hitarea') ||
+                    el.classList.contains('viewport-dither-canvas') ||
+                    el.classList.contains('dither-video')
+                ))
+            ) return true;
             if (el.matches('a, button, input, textarea, label, .home, .contact, .contact-tab, .nav-bar, .controls, .gen-counter, .page-work')) return true;
             el = el.parentElement;
         }
@@ -432,9 +441,6 @@
     document.addEventListener('touchstart', (e) => {
         const target = e.target;
         const interactive = isInteractive(target);
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/b6e8a1a9-ad94-4558-a64f-e8756014b6ea',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'life.js:touchstart',message:'touchstart',data:{tag:target.tagName,className:target.className||'',id:target.id||'',isInteractive:interactive,action:interactive?'skip':'pointerDown'},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
-        // #endregion
         if (interactive) return;
         e.preventDefault();
         pointerDown(e);

@@ -192,7 +192,7 @@ canvas#life {
     width: 100%;
     height: 100%;
     opacity: 1;
-    transition: opacity 280ms ease;
+    transition: opacity 500ms ease;
 }
 
 .dither-video > video {
@@ -200,15 +200,31 @@ canvas#life {
     inset: 0;
     width: 100%;
     height: 100%;
+    object-fit: cover;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 280ms ease;
+    transition: opacity 500ms ease;
+}
+
+.dither-video.dither-video--suppress-transition .dither-video-canvas,
+.dither-video.dither-video--suppress-transition > video {
+    transition: none;
+}
+
+.dither-video:not(.dither-video--ready) .dither-video-canvas {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.dither-video:not(.dither-video--ready) > video {
+    opacity: 1;
 }
 
 .dither-video > video.dither-video-fallback {
     position: static;
     width: 100%;
-    height: auto;
+    height: 100%;
+    object-fit: cover;
     opacity: 1;
     pointer-events: auto;
 }
@@ -309,7 +325,41 @@ canvas#life {
     display: none;
 }
 
+#desktop-case-preview {
+    display: none;
+}
+
 @media (min-width: 1024px) {
+    #desktop-case-preview {
+        display: grid;
+        place-items: center;
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 12;
+    }
+
+    #desktop-case-preview .viewport-dither-canvas {
+        position: absolute;
+        inset: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+
+    #desktop-case-preview .desktop-case-preview-hitarea {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        pointer-events: auto;
+        cursor: grab;
+        touch-action: none;
+    }
+
+    #desktop-case-preview .desktop-case-preview-hitarea.desktop-case-preview-hitarea--dragging {
+        cursor: grabbing;
+    }
+
     #desktop-contact-panel {
         display: block;
         position: fixed;
@@ -321,7 +371,7 @@ canvas#life {
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.32s cubic-bezier(0.2, 0.9, 0.2, 1);
-        z-index: 11;
+        z-index: 13;
         box-sizing: border-box;
     }
 
@@ -402,15 +452,24 @@ canvas#life {
         flex-grow: 0;
         flex-shrink: 0;
         flex-basis: var(--collapsed-basis, auto);
+        min-width: 0;
         cursor: pointer;
         padding-inline: 1rem;
         padding-block: 0;
         display: flex;
         align-items: center;
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
         transition: flex-grow 0.32s cubic-bezier(0.2, 0.9, 0.2, 1),
                     flex-shrink 0.32s cubic-bezier(0.2, 0.9, 0.2, 1),
                     flex-basis 0.32s cubic-bezier(0.2, 0.9, 0.2, 1);
+    }
+
+    .test-expand-bar[data-expanded="none"] > [data-expand] {
+        transition: flex-grow 0.56s cubic-bezier(0.25, 0.7, 0.2, 1),
+                    flex-shrink 0.56s cubic-bezier(0.25, 0.7, 0.2, 1),
+                    flex-basis 0.56s cubic-bezier(0.25, 0.7, 0.2, 1);
     }
 
     .test-expand-bar-contact {
