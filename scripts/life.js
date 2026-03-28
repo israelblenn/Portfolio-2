@@ -409,6 +409,9 @@
             setCell(startR, startC, 0);
             placeGlider(startR, startC);
         }
+        if (drawing && typeof window.getSelection === 'function') {
+            window.getSelection().removeAllRanges();
+        }
         drawing = false;
     }
 
@@ -425,18 +428,31 @@
                     el.classList.contains('dither-video')
                 ))
             ) return true;
-            if (el.matches('a, button, input, textarea, label, .home, .contact, .contact-tab, .nav-bar, .controls, .gen-counter, .page-work')) return true;
+            if (el.matches('a, button, input, textarea, label, .home, .contact, .contact-tab, .nav-bar, .controls, .gen-counter, .page-work, #test-case-description')) return true;
             el = el.parentElement;
         }
         return false;
     }
 
     document.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
         if (isInteractive(e.target)) return;
+        e.preventDefault();
         pointerDown(e);
     });
-    document.addEventListener('mousemove', (e) => pointerMove(e));
+    document.addEventListener('mousemove', (e) => {
+        if (drawing) e.preventDefault();
+        pointerMove(e);
+    });
     window.addEventListener('mouseup', () => pointerUp());
+
+    document.addEventListener(
+        'selectstart',
+        (e) => {
+            if (drawing) e.preventDefault();
+        },
+        true
+    );
 
     document.addEventListener('touchstart', (e) => {
         const target = e.target;

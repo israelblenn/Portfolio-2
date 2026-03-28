@@ -170,6 +170,10 @@
             var desktopPreviewScaleTarget = 1;
             var desktopPreviewScaleRafId = null;
             var desktopPreviewResetInteractionWarps = null;
+            var desktopPreviewLiftBoost = 0;
+            var desktopPreviewLiftTarget = 0;
+            var desktopPreviewLiftRafId = null;
+            var desktopPreviewWheelUsedThisDrag = false;
             var desktopViewportRenderer = null;
             var desktopPreviewActiveVideo = null;
             var desktopPreviewHitArea = null;
@@ -376,7 +380,46 @@
             function computeVideoSize() {
                 var w = Math.min(window.innerWidth * 0.33, window.innerHeight * 0.586667);
                 var h = w / (16 / 9);
-                return { w: w * desktopPreviewScale, h: h * desktopPreviewScale };
+                var s = desktopPreviewScale * (1 + desktopPreviewLiftBoost);
+                return { w: w * s, h: h * s };
+            }
+
+            function animateDesktopPreviewLift() {
+                if (desktopPreviewLiftRafId !== null) return;
+                function tick() {
+                    var delta = desktopPreviewLiftTarget - desktopPreviewLiftBoost;
+                    if (Math.abs(delta) < 0.0005) {
+                        desktopPreviewLiftBoost = desktopPreviewLiftTarget;
+                        updateRendererTransform();
+                        desktopPreviewLiftRafId = null;
+                        return;
+                    }
+                    desktopPreviewLiftBoost += delta * 0.28;
+                    updateRendererTransform();
+                    desktopPreviewLiftRafId = requestAnimationFrame(tick);
+                }
+                desktopPreviewLiftRafId = requestAnimationFrame(tick);
+            }
+
+            /** Fold pick-up lift into base scale so wheel + drop stay size-consistent. */
+            function bakeDesktopPreviewLiftIntoScale() {
+                var liftMul = desktopPreviewLiftBoost;
+                if (liftMul < 1e-4 && desktopPreviewLiftTarget > 1e-4) {
+                    liftMul = desktopPreviewLiftTarget;
+                }
+                if (liftMul < 1e-4) return;
+                var vis = desktopPreviewScale * (1 + liftMul);
+                vis = Math.max(0.5, Math.min(2.5, vis));
+                desktopPreviewScale = vis;
+                desktopPreviewScaleTarget = vis;
+                cancelDesktopPreviewScaleSmoothing();
+                desktopPreviewLiftBoost = 0;
+                desktopPreviewLiftTarget = 0;
+                if (desktopPreviewLiftRafId !== null) {
+                    cancelAnimationFrame(desktopPreviewLiftRafId);
+                    desktopPreviewLiftRafId = null;
+                }
+                updateRendererTransform();
             }
 
             function computeVideoCenter() {
@@ -393,6 +436,11 @@
                 var size = computeVideoSize();
                 renderer.setCenter(center.x, center.y);
                 renderer.setSize(size.w, size.h);
+                if (typeof renderer.setShadowStrength === 'function') {
+                    var effectiveScale = desktopPreviewScale * (1 + desktopPreviewLiftBoost);
+                    var t = Math.max(0, Math.min(1, (effectiveScale - 0.5) / 0.5));
+                    renderer.setShadowStrength(t);
+                }
                 if (desktopPreviewHitArea) {
                     desktopPreviewHitArea.style.width = size.w + 'px';
                     desktopPreviewHitArea.style.height = size.h + 'px';
@@ -422,6 +470,13 @@
                 desktopPreviewDragOffsetY = 0;
                 desktopPreviewScale = 1;
                 desktopPreviewScaleTarget = 1;
+                desktopPreviewLiftBoost = 0;
+                desktopPreviewLiftTarget = 0;
+                desktopPreviewWheelUsedThisDrag = false;
+                if (desktopPreviewLiftRafId !== null) {
+                    cancelAnimationFrame(desktopPreviewLiftRafId);
+                    desktopPreviewLiftRafId = null;
+                }
                 cancelDesktopPreviewScaleSmoothing();
                 if (desktopPreviewMomentumRafId !== null) {
                     cancelAnimationFrame(desktopPreviewMomentumRafId);
@@ -707,19 +762,33 @@
                 }
 
                 function applyWheelScale(event) {
+                    if (desktopPreviewIsDragging &&
+                        (desktopPreviewLiftBoost > 1e-4 || desktopPreviewLiftTarget > 1e-4)) {
+                        bakeDesktopPreviewLiftIntoScale();
+                    }
+                    var prevTarget = desktopPreviewScaleTarget;
                     var nextScale = desktopPreviewScaleTarget + (-event.deltaY * 0.0012);
-                    desktopPreviewScaleTarget = Math.max(0.5, Math.min(2.5, nextScale));
-                    startScaleSmoothing();
-                    var size = computeVideoSize();
-                    var center = computeVideoCenter();
-                    var relX = (event.clientX - center.x) / Math.max(1, size.w);
-                    var impulse = -event.deltaY * 0.00018;
-                    wheelWarpX += relX * impulse * 0.9;
-                    wheelWarpY += impulse * 1.4;
-                    zoomWarp += event.deltaY * 0.00035;
-                    zoomWarp = Math.max(-0.22, Math.min(0.22, zoomWarp));
-                    applyShaderVelocity();
-                    startWheelWarpDecay();
+                    var clamped = Math.max(0.5, Math.min(2.5, nextScale));
+                    var scaleWouldChange = Math.abs(clamped - prevTarget) > 1e-6;
+                    desktopPreviewScaleTarget = clamped;
+                    if (scaleWouldChange) {
+                        startScaleSmoothing();
+                    }
+                    if (desktopPreviewIsDragging && scaleWouldChange) {
+                        desktopPreviewWheelUsedThisDrag = true;
+                    }
+                    if (scaleWouldChange) {
+                        var size = computeVideoSize();
+                        var center = computeVideoCenter();
+                        var relX = (event.clientX - center.x) / Math.max(1, size.w);
+                        var impulse = -event.deltaY * 0.00018;
+                        wheelWarpX += relX * impulse * 0.9;
+                        wheelWarpY += impulse * 1.4;
+                        zoomWarp += event.deltaY * 0.00035;
+                        zoomWarp = Math.max(-0.22, Math.min(0.22, zoomWarp));
+                        applyShaderVelocity();
+                        startWheelWarpDecay();
+                    }
                     event.preventDefault();
                 }
 
@@ -732,6 +801,12 @@
                     if (!isDragging) return;
                     isDragging = false;
                     desktopPreviewIsDragging = false;
+                    desktopPreviewLiftTarget = 0;
+                    if (desktopPreviewWheelUsedThisDrag) {
+                        bakeDesktopPreviewLiftIntoScale();
+                    }
+                    desktopPreviewWheelUsedThisDrag = false;
+                    animateDesktopPreviewLift();
                     hitArea.classList.remove('desktop-case-preview-hitarea--dragging');
                     window.removeEventListener('pointermove', onPointerMove);
                     window.removeEventListener('pointerup', stopDragging);
@@ -761,6 +836,9 @@
                     applyShaderVelocity();
                     isDragging = true;
                     desktopPreviewIsDragging = true;
+                    desktopPreviewWheelUsedThisDrag = false;
+                    desktopPreviewLiftTarget = 0.04;
+                    animateDesktopPreviewLift();
                     startPointerX = event.clientX;
                     startPointerY = event.clientY;
                     startOffsetX = desktopPreviewDragOffsetX;

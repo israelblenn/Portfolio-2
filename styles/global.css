@@ -336,7 +336,7 @@ canvas#life {
         position: fixed;
         inset: 0;
         pointer-events: none;
-        z-index: 12;
+        z-index: 20;
     }
 
     #desktop-case-preview .viewport-dither-canvas {
@@ -409,7 +409,9 @@ canvas#life {
         margin: 0;
         padding-inline: 1rem;
         max-width: 64rem;
-        pointer-events: none;
+        pointer-events: auto;
+        user-select: text;
+        z-index: 13;
         transition: opacity 0.32s ease;
     }
 

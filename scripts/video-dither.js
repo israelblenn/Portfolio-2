@@ -321,6 +321,7 @@
             'uniform vec3 u_tintColor;',
             'uniform float u_tintStrength;',
             'uniform float u_ditherMix;',
+            'uniform float u_shadowStrength;',
             'varying vec2 v_uv;',
             '',
             'float bayer4x4(vec2 p) {',
@@ -362,14 +363,14 @@
             '  vec2 warp = u_velocity * pinchedDist * 0.45;',
             '  vec2 warpedRel = pinchedRel + warp;',
             '  vec2 videoUV = warpedRel + 0.5;',
-            '  vec2 shadowTestUV = videoUV - vec2(0.012, 0.018);',
-            '  vec2 sd = max(abs(shadowTestUV - 0.5) - 0.5, 0.0) * u_videoSize;',
+            '  vec2 sd = max(abs(videoUV - 0.5) - 0.5, 0.0) * u_videoSize;',
             '  float shadowDist = length(sd);',
             '  bool outside = videoUV.x < 0.0 || videoUV.x > 1.0 || videoUV.y < 0.0 || videoUV.y > 1.0;',
             '  if (outside) {',
+            '    if (u_shadowStrength < 0.001) discard;',
             '    float minDim = min(u_videoSize.x, u_videoSize.y);',
-            '    float shadowSpread = 0.09 * minDim;',
-            '    float shadowAlpha = 0.14 * exp(-2.8 * shadowDist / shadowSpread);',
+            '    float shadowSpread = 0.09 * minDim * u_shadowStrength;',
+            '    float shadowAlpha = 0.14 * u_shadowStrength * exp(-2.8 * shadowDist / max(shadowSpread, 0.1));',
             '    if (shadowAlpha < 0.002) discard;',
             '    gl_FragColor = vec4(0.0, 0.0, 0.0, shadowAlpha);',
             '    return;',
@@ -444,6 +445,7 @@
         var uTintColor = gl.getUniformLocation(program, 'u_tintColor');
         var uTintStrength = gl.getUniformLocation(program, 'u_tintStrength');
         var uDitherMix = gl.getUniformLocation(program, 'u_ditherMix');
+        var uShadowStrength = gl.getUniformLocation(program, 'u_shadowStrength');
 
         var videoEl = null;
         var centerX = 0, centerY = 0;
@@ -454,6 +456,7 @@
         var tintColor = [1, 1, 1];
         var tintStrength = 1.0;
         var ditherMix = 1.0;
+        var shadowStrength = 1.0;
         var enabled = false;
 
         function resize() {
@@ -491,6 +494,7 @@
                 gl.uniform3f(uTintColor, tintColor[0], tintColor[1], tintColor[2]);
                 gl.uniform1f(uTintStrength, tintStrength);
                 gl.uniform1f(uDitherMix, ditherMix);
+                gl.uniform1f(uShadowStrength, shadowStrength);
                 gl.drawArrays(gl.TRIANGLES, 0, 6);
             }
             requestAnimationFrame(render);
@@ -517,6 +521,7 @@
                     if (parsed) tintColor = parsed;
                 }
             },
+            setShadowStrength: function(s) { shadowStrength = Math.max(0, Math.min(1, s)); },
             setEnabled: function(e) { enabled = !!e; }
         };
     }
