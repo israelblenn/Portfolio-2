@@ -160,6 +160,7 @@
 
             var shaderCases = [];
             var selectedCaseIndex = null;
+            var caseActiveIndicator = document.getElementById('case-active-indicator');
             var desktopPreviewHost = null;
             var selectedCaseDitherTimeout = null;
             var desktopPreviewActiveIndex = null;
@@ -180,6 +181,17 @@
             var desktopPreviewIsDragging = false;
             var delayedPreviewRenderTimeout = null;
             var desktopPreviewDitherFadeRafId = null;
+
+            function syncCaseActiveIndicator() {
+                if (!caseActiveIndicator) return;
+                if (selectedCaseIndex !== null) {
+                    caseActiveIndicator.classList.add('case-active-indicator--active');
+                } else {
+                    caseActiveIndicator.classList.remove('case-active-indicator--active');
+                }
+            }
+
+            syncCaseActiveIndicator();
 
             function cancelDesktopPreviewDitherFade() {
                 if (desktopPreviewDitherFadeRafId !== null) {
@@ -1023,6 +1035,7 @@
                 } else {
                     selectedCaseIndex = selectedIndex;
                 }
+                syncCaseActiveIndicator();
                 shaderCases.forEach(function(item, index) {
                     if (!item || !item.wrapper ||
                         typeof item.wrapper.setDitherEnabled !== 'function') return;
@@ -1061,6 +1074,7 @@
             function clearCaseSelection() {
                 clearSelectedCaseDitherTimeout();
                 selectedCaseIndex = null;
+                syncCaseActiveIndicator();
                 shaderCases.forEach(function(item) {
                     if (!item || !item.wrapper ||
                         typeof item.wrapper.setDitherEnabled !== 'function') return;
