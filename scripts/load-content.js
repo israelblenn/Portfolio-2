@@ -161,6 +161,12 @@
             var shaderCases = [];
             var selectedCaseIndex = null;
             var caseActiveIndicator = document.getElementById('case-active-indicator');
+            var homeSymbol = '\u00BF';
+            var navMorphCtrl = null;
+            var testMorphCtrl = null;
+            var parsedIcons = null;
+            var morphLibs = null;
+            var morphReady = false;
             var desktopPreviewHost = null;
             var selectedCaseDitherTimeout = null;
             var desktopPreviewActiveIndex = null;
@@ -192,6 +198,247 @@
             }
 
             syncCaseActiveIndicator();
+
+            // ── Icon morph transition (Flubber + Motion) ──
+
+            function scalePathD(d, scale) {
+                return d.replace(/-?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?/gi, function(n) {
+                    return String(parseFloat(n) * scale);
+                });
+            }
+
+            function parseIconSVG(svgText) {
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(svgText, 'image/svg+xml');
+                var svgEl = doc.querySelector('svg');
+                if (!svgEl) return null;
+                var vb = (svgEl.getAttribute('viewBox') || '').split(/[\s,]+/).map(Number);
+                var nW = vb[2] || parseFloat(svgEl.getAttribute('width')) || 16;
+                var nH = vb[3] || parseFloat(svgEl.getAttribute('height')) || 16;
+                var scale = 16 / Math.max(nW, nH);
+                var paths = [];
+                svgEl.querySelectorAll('path').forEach(function(p) {
+                    var d = p.getAttribute('d');
+                    if (scale !== 1) d = scalePathD(d, scale);
+                    paths.push({ d: d, fill: p.getAttribute('fill') || '#000' });
+                });
+                return { paths: paths, nativeW: nW, nativeH: nH };
+            }
+
+            function lerpColor(a, b, t) {
+                var aR = parseInt(a.slice(1, 3), 16), aG = parseInt(a.slice(3, 5), 16), aB = parseInt(a.slice(5, 7), 16);
+                var bR = parseInt(b.slice(1, 3), 16), bG = parseInt(b.slice(3, 5), 16), bB = parseInt(b.slice(5, 7), 16);
+                var r = Math.round(aR + (bR - aR) * t);
+                var g = Math.round(aG + (bG - aG) * t);
+                var bl = Math.round(aB + (bB - aB) * t);
+                return '#' + ((1 << 24) | (r << 16) | (g << 8) | bl).toString(16).slice(1);
+            }
+
+            var iconFetchP = Promise.all(
+                content.cases.map(function(c) {
+                    if (!c.icon) return Promise.resolve(null);
+                    return fetch(c.icon).then(function(r) { return r.text(); })
+                        .then(parseIconSVG).catch(function() { return null; });
+                })
+            ).then(function(icons) {
+                parsedIcons = icons;
+                syncHomeButtonIndicator();
+            });
+
+            function easeInOutCubic(t) {
+                return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+            }
+
+            function tween(dur, onUpdate, onComplete) {
+                var start = performance.now();
+                var ms = dur * 1000;
+                function tick(now) {
+                    var t = Math.min(1, (now - start) / ms);
+                    onUpdate(easeInOutCubic(t));
+                    if (t < 1) requestAnimationFrame(tick);
+                    else if (onComplete) onComplete();
+                }
+                requestAnimationFrame(tick);
+            }
+
+            import('https://cdn.jsdelivr.net/npm/flubber@0.4.2/+esm').then(function(flubber) {
+                morphLibs = {
+                    interpolate: flubber.interpolate,
+                    toCircle: flubber.toCircle,
+                    fromCircle: flubber.fromCircle
+                };
+                if (parsedIcons) { morphReady = true; syncHomeButtonIndicator(); }
+                iconFetchP.then(function() {
+                    if (!morphReady) { morphReady = true; syncHomeButtonIndicator(); }
+                });
+            }).catch(function() {});
+
+            function createMorphController(hostEl) {
+                var textSpan = document.createElement('span');
+                textSpan.className = 'home-symbol';
+                textSpan.textContent = hostEl.textContent;
+                hostEl.textContent = '';
+                hostEl.appendChild(textSpan);
+
+                var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('viewBox', '0 0 16 16');
+                svg.setAttribute('aria-hidden', 'true');
+                svg.classList.add('home-icon-svg');
+                svg.style.display = 'none';
+                hostEl.appendChild(svg);
+
+                var pathEls = [];
+                var cur = null;
+                var gen = 0;
+
+                function ensure(n) {
+                    while (pathEls.length < n) {
+                        pathEls.push(svg.appendChild(
+                            document.createElementNS('http://www.w3.org/2000/svg', 'path')
+                        ));
+                    }
+                }
+
+                function setInstant(toP, toW, toH) {
+                    textSpan.style.display = 'none';
+                    textSpan.style.opacity = '';
+                    svg.style.display = '';
+                    svg.style.opacity = '';
+                    svg.style.width = toW + 'px';
+                    svg.style.height = toH + 'px';
+                    ensure(toP.length);
+                    toP.forEach(function(p, i) {
+                        pathEls[i].setAttribute('d', p.d);
+                        pathEls[i].setAttribute('fill', p.fill);
+                        pathEls[i].style.display = '';
+                    });
+                    for (var i = toP.length; i < pathEls.length; i++) pathEls[i].style.display = 'none';
+                    cur = { paths: toP.slice(), w: toW, h: toH };
+                }
+
+                function resetToText() {
+                    svg.style.display = 'none';
+                    svg.style.opacity = '';
+                    textSpan.style.display = '';
+                    textSpan.style.opacity = '';
+                    cur = null;
+                }
+
+                return {
+                    morphTo: function(iconData) {
+                        gen++;
+                        var g = gen;
+                        var dur = 0.35;
+                        var mopts = { maxSegmentLength: 1 };
+
+                        /* deselect → show ¿ */
+                        if (!iconData) {
+                            if (!cur) return;
+                            if (!morphReady) { resetToText(); return; }
+                            var exitIs = cur.paths.map(function(p) {
+                                return morphLibs.toCircle(p.d, 8, 8, 0.3, mopts);
+                            });
+                            textSpan.style.display = '';
+                            textSpan.style.opacity = '0';
+                            tween(dur, function(t) {
+                                if (gen !== g) return;
+                                exitIs.forEach(function(fn, i) { pathEls[i].setAttribute('d', fn(t)); });
+                                textSpan.style.opacity = String(t);
+                                svg.style.opacity = String(1 - t);
+                            }, function() { if (gen === g) resetToText(); });
+                            cur = null;
+                            return;
+                        }
+
+                        var toP = iconData.paths;
+                        var toW = iconData.nativeW || 16;
+                        var toH = iconData.nativeH || 16;
+                        ensure(toP.length);
+
+                        /* first select: ¿ → icon */
+                        if (!cur) {
+                            if (!morphReady) { setInstant(toP, toW, toH); return; }
+                            svg.style.display = '';
+                            svg.style.width = toW + 'px';
+                            svg.style.height = toH + 'px';
+                            svg.style.opacity = '0';
+                            var enterIs = toP.map(function(p) {
+                                return morphLibs.fromCircle(8, 8, 0.3, p.d, mopts);
+                            });
+                            toP.forEach(function(p, i) {
+                                pathEls[i].setAttribute('d', enterIs[i](0));
+                                pathEls[i].setAttribute('fill', p.fill);
+                                pathEls[i].style.display = '';
+                            });
+                            for (var k = toP.length; k < pathEls.length; k++) pathEls[k].style.display = 'none';
+                            tween(dur, function(t) {
+                                if (gen !== g) return;
+                                enterIs.forEach(function(fn, i) { pathEls[i].setAttribute('d', fn(t)); });
+                                textSpan.style.opacity = String(1 - t);
+                                svg.style.opacity = String(t);
+                            }, function() {
+                                if (gen !== g) return;
+                                textSpan.style.display = 'none';
+                                textSpan.style.opacity = '';
+                                svg.style.opacity = '';
+                                toP.forEach(function(p, i) { pathEls[i].setAttribute('d', p.d); });
+                            });
+                            cur = { paths: toP.slice(), w: toW, h: toH };
+                            return;
+                        }
+
+                        /* switch case: icon → icon */
+                        if (!morphReady) { setInstant(toP, toW, toH); return; }
+                        var fromP = cur.paths;
+                        var fW = cur.w, fH = cur.h;
+                        var maxN = Math.max(fromP.length, toP.length);
+                        ensure(maxN);
+                        var mis = [];
+                        for (var i = 0; i < maxN; i++) {
+                            var fd = fromP[i] ? fromP[i].d : null;
+                            var td = toP[i] ? toP[i].d : null;
+                            var ff = fromP[i] ? fromP[i].fill : (toP[i] ? toP[i].fill : '#000');
+                            var tf = toP[i] ? toP[i].fill : ff;
+                            var fn, hide = false;
+                            if (fd && td) fn = morphLibs.interpolate(fd, td, mopts);
+                            else if (td) { fn = morphLibs.fromCircle(8, 8, 0.3, td, mopts); pathEls[i].setAttribute('d', fn(0)); }
+                            else if (fd) { fn = morphLibs.toCircle(fd, 8, 8, 0.3, mopts); hide = true; }
+                            pathEls[i].style.display = '';
+                            mis.push({ fn: fn, ff: ff, tf: tf, hide: hide });
+                        }
+                        tween(dur, function(t) {
+                            if (gen !== g) return;
+                            for (var j = 0; j < mis.length; j++) {
+                                pathEls[j].setAttribute('d', mis[j].fn(t));
+                                if (mis[j].ff !== mis[j].tf)
+                                    pathEls[j].setAttribute('fill', lerpColor(mis[j].ff, mis[j].tf, t));
+                            }
+                            svg.style.width = (fW + (toW - fW) * t) + 'px';
+                            svg.style.height = (fH + (toH - fH) * t) + 'px';
+                        }, function() {
+                            if (gen !== g) return;
+                            for (var j = 0; j < toP.length; j++) {
+                                pathEls[j].setAttribute('d', toP[j].d);
+                                pathEls[j].setAttribute('fill', toP[j].fill);
+                            }
+                            for (var j = 0; j < mis.length; j++) {
+                                if (mis[j].hide) pathEls[j].style.display = 'none';
+                            }
+                            for (var j = toP.length; j < pathEls.length; j++) pathEls[j].style.display = 'none';
+                            svg.style.width = toW + 'px';
+                            svg.style.height = toH + 'px';
+                        });
+                        cur = { paths: toP.slice(), w: toW, h: toH };
+                    }
+                };
+            }
+
+            function syncHomeButtonIndicator() {
+                var target = selectedCaseIndex !== null && parsedIcons
+                    ? parsedIcons[selectedCaseIndex] : null;
+                if (navMorphCtrl) navMorphCtrl.morphTo(target);
+                if (testMorphCtrl) testMorphCtrl.morphTo(target);
+            }
 
             function cancelDesktopPreviewDitherFade() {
                 if (desktopPreviewDitherFadeRafId !== null) {
@@ -1036,6 +1283,7 @@
                     selectedCaseIndex = selectedIndex;
                 }
                 syncCaseActiveIndicator();
+                syncHomeButtonIndicator();
                 shaderCases.forEach(function(item, index) {
                     if (!item || !item.wrapper ||
                         typeof item.wrapper.setDitherEnabled !== 'function') return;
@@ -1075,6 +1323,7 @@
                 clearSelectedCaseDitherTimeout();
                 selectedCaseIndex = null;
                 syncCaseActiveIndicator();
+                syncHomeButtonIndicator();
                 shaderCases.forEach(function(item) {
                     if (!item || !item.wrapper ||
                         typeof item.wrapper.setDitherEnabled !== 'function') return;
@@ -1162,7 +1411,9 @@
                 // Home button at the top
                 var homeBtn = document.createElement('div');
                 homeBtn.className = 'nav-bar-home';
-                homeBtn.textContent = '\u00BF';
+                homeBtn.textContent = homeSymbol;
+                navMorphCtrl = createMorphController(homeBtn);
+                syncHomeButtonIndicator();
                 homeBtn.addEventListener('click', function() {
                     clearCaseSelection();
                     var viewport = document.querySelector('.page-slider-viewport');
@@ -1237,7 +1488,9 @@
                 // Home button (matches nav-bar-home behaviour)
                 var testHome = document.createElement('div');
                 testHome.className = 'test-expand-bar-home';
-                testHome.textContent = '\u00BF';
+                testHome.textContent = homeSymbol;
+                testMorphCtrl = createMorphController(testHome);
+                syncHomeButtonIndicator();
                 testHome.style.cursor = 'pointer';
                 testHome.addEventListener('click', function() {
                     clearCaseSelection();

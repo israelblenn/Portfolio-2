@@ -40,6 +40,7 @@
       "description": "Building a website for a leading Sydney music agency designed around a unique modular page structure. It features a highly interactive roster brimming with dynamic animations that contrast bold Swiss-style geometry against a minimalist slate backdrop.",
       "link": "#",
       "video": "assets/LBC.mp4",
+      "icon": "assets/1.svg",
       "colour": "#FF4338"
     },
     {
@@ -47,6 +48,7 @@
       "description": "Designing and building a personal website and shop for Melbourne-based artist, writer and complexity scientist. Featuring novel layouts and engaging interactive experiences, grounded in minimalist design principles and UX sensibilities.",
       "link": "#",
       "video": "assets/MBC108030.mp4",
+      "icon": "assets/2.svg",
       "colour": "#0051FF"
     },
     {
@@ -54,6 +56,7 @@
       "description": "Re-imagining the visual identity of a local church — which involved creating a feature-rich website among multiple other pieces of branded material. The site includes a custom built database and platform that allows church members to stream archived sermons online.",
       "link": "#",
       "video": "assets/LBC108030.mp4",
+      "icon": "assets/3.svg",
       "colour": "#FFBA3A"
     },
     {
@@ -61,6 +64,7 @@
       "description": "A first-of-its-kind light pollution simulation web app designed and produced in collaboration with two other design students for the Murry River International Dark Sky Reserve. Made possible through the integration of multiple 3rd party APIs.",
       "link": "#",
       "video": "assets/YS108030.mp4",
+      "icon": "assets/4.svg",
       "colour": "#697898"
     }
   ]
