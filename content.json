@@ -6,33 +6,9 @@
     "headline": "Independent design practice focused on websites and brand identity.",
     "description": "I burn rubber at the intersection of clean gridded typography and POMA (the principle of <i>most</i> astonishment)"
   },
-  "navigation": {
-    "contentsLabel": "Contents",
-    "items": [
-      {
-        "label": "Home",
-        "emphasized": true
-      },
-      {
-        "label": "Work",
-        "emphasized": true,
-        "children": [
-          "The Harbour Agency",
-          "Mark Bo Chu",
-          "Lismore Baptist Church",
-          "Light Pollution Simulator"
-        ]
-      },
-      {
-        "label": "Contact",
-        "emphasized": false
-      }
-    ]
-  },
   "contact": {
     "email": "hi@israelblennerhassett.com",
-    "phone": "+61 422 544 376",
-    "tabLabel": "Contact"
+    "phone": "+61 422 544 376"
   },
   "cases": [
     {

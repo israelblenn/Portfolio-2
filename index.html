@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title data-content="site.title"></title> <!-- Hardcode for seo? -->
+    <title data-content="site.title"></title> <!-- !! Hardcode for seo? -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,21 +14,18 @@
 <body>
     <div class="page-slider-viewport">
         <div class="page-slider">
-            <section class="page page-home">
+            <section class="page">
                 <canvas id="life"></canvas>
                 <div class="home">
-                    <p data-content="home.headline" data-content-emphasis="home.description"></p>
+                    <p data-content="home.headline" data-content-emphasis="home.description"></p> <!-- !! rename? -->
                     <div class="contacts">
                         <span data-content="contact.email"></span>
                         <span data-content="contact.phone"></span>
                     </div>
                 </div>
-
-                <div class="contact-tab" data-content="contact.tabLabel">
-                    Contact
-                </div>
+                <div class="contact-tab">Contact</div>
                 <div class="contact">
-                    <form action="https://api.web3forms.com/submit" method="POST">
+                    <form id="contact-form" action="https://api.web3forms.com/submit" method="POST">
                         <input type="hidden" name="access_key" value="486a8de8-900f-4aa2-9f28-ac3704e05838">
                         <label for="name">Name</label>
                         <input type="text" name="name" required>
@@ -45,26 +42,12 @@
                     </form>
                 </div>
             </section>
-            <div class="test-expand-bar" id="test-expand-bar" data-expanded="0"></div>
             <div class="nav-bar" id="nav-bar"></div>
-            <div id="case-active-indicator" aria-hidden="true"></div>
+            <div id="tool-tip" aria-hidden="true"></div>
             <section class="page page-work">
                 <div class="work-cases" id="work-cases" aria-label="Work"></div>
             </section>
         </div>
-    </div>
-
-    <!-- Desktop contact panel (hidden on mobile) -->
-    <div id="desktop-contact-panel">
-        <form id="desktop-contact-form" action="https://api.web3forms.com/submit" method="POST">
-            <input type="hidden" name="access_key" value="486a8de8-900f-4aa2-9f28-ac3704e05838">
-            <label for="dc-name">Name</label>
-            <input type="text" id="dc-name" name="name" required>
-            <label for="dc-email">Email Address</label>
-            <input type="email" id="dc-email" name="email" required>
-            <label for="dc-message">Message</label>
-            <textarea id="dc-message" name="message" required></textarea>
-        </form>
     </div>
 
     <script src="scripts/life.js"></script>

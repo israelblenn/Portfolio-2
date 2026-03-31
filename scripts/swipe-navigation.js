@@ -6,14 +6,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var DESKTOP_BREAKPOINT = '(min-width: 1024px)';
 
-    /** Move nav into slider (mobile: flows with swipe) or out to viewport (desktop: fixed at bottom). */
+    /** Move shared nav into slider (mobile) or viewport (desktop). */
     function placeNavForBreakpoint() {
         if (!navBar) return;
-        var testBar = document.getElementById('test-expand-bar');
         var isDesktop = window.matchMedia(DESKTOP_BREAKPOINT).matches;
         if (isDesktop) {
             if (navBar.parentNode !== viewport) viewport.appendChild(navBar);
-            if (testBar && testBar.parentNode !== viewport) viewport.insertBefore(testBar, navBar);
         } else {
             if (navBar.parentNode !== slider) slider.insertBefore(navBar, slider.children[1]);
         }
@@ -56,7 +54,9 @@ document.addEventListener('DOMContentLoaded', function () {
         rafId = req(function () {
             rafId = null;
             if (pendingX == null) return;
-            slider.style.transform = 'translate3d(' + pendingX + 'px, 0, 0)';
+            slider.style.transform = pendingX === 0
+                ? ''
+                : 'translate3d(' + pendingX + 'px, 0, 0)';
         });
     }
 

@@ -428,7 +428,7 @@
                     el.classList.contains('dither-video')
                 ))
             ) return true;
-            if (el.matches('a, button, input, textarea, label, .home, .contact, .contact-tab, .nav-bar, .controls, .gen-counter, .page-work, #test-case-description, #case-active-indicator')) return true;
+            if (el.matches('a, button, input, textarea, label, .home, .contact, .contact-tab, .nav-bar, .controls, .gen-counter, .page-work, #case-description, #tool-tip')) return true;
             el = el.parentElement;
         }
         return false;
