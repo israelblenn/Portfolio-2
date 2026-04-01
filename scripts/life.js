@@ -3,7 +3,6 @@
     const canvas = document.getElementById('life');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    const genEl = document.getElementById('gen');
 
     let cols, rows;
     let grid, nextGrid; // 0 = dead, 1+ = age (generations alive)
@@ -21,13 +20,21 @@
     let snapshot = null;
     let stagnationCounter = 0;
 
-    // Case colours for cell aging (fetched from content.json)
+    // 0 = square cells, 1 = circular; lerped when work case selection changes
+    let shapeProgress = 0;
+    let lastMorphTime = null;
+    const SHAPE_MORPH_PER_SEC = 2; // 1 / 0.5s → 500ms full square↔circle transition
+
+    // Case colours for cell aging (fed by load-content.js)
     let caseColours = ['#000', '#000', '#000', '#000'];
-    fetch('content.json').then(r => r.json()).then(data => {
-        if (data.cases) {
-            caseColours = data.cases.map(c => c.colour || '#000');
-        }
-    }).catch(() => {});
+    function applyCaseColours(data) {
+        if (!data || !Array.isArray(data.cases)) return;
+        caseColours = data.cases.map(c => c.colour || '#000');
+    }
+    applyCaseColours(window.siteContent);
+    window.addEventListener('sitecontent:loaded', function(event) {
+        applyCaseColours(event && event.detail);
+    });
 
     // --- Resize & init ---
     const section = canvas.closest('section') || canvas.parentElement;
@@ -181,7 +188,58 @@
     }
 
     // --- Drawing ---
-    const GAP = 1; // 1px inset per side for white outline
+    const GAP_SQUARE = 1; // Original square-cell inset (white outline between cells)
+    const GAP_CIRCLE = 0.5; // Tighter inset so circles read larger on the same grid
+    const DOT_SCALE = 0.92;
+
+    function hasSelectedCase() {
+        return !!document.querySelector('.work-case--selected, .nav-bar-case--selected');
+    }
+
+    /** Rounded rect path; r clamped to fit w×h (r = min/2 yields a circle). */
+    function pathRoundRect(x, y, w, h, r) {
+        const rr = Math.max(0, Math.min(r, w / 2, h / 2));
+        if (rr <= 0) {
+            ctx.rect(x, y, w, h);
+            return;
+        }
+        ctx.moveTo(x + rr, y);
+        ctx.arcTo(x + w, y, x + w, y + rr, rr);
+        ctx.arcTo(x + w, y + h, x + w - rr, y + h, rr);
+        ctx.arcTo(x, y + h, x, y + h - rr, rr);
+        ctx.arcTo(x, y, x + rr, y, rr);
+        ctx.closePath();
+    }
+
+    function fillCellByProgress(row, col, colour, t) {
+        const p = Math.max(0, Math.min(1, t));
+        const gap = GAP_SQUARE + (GAP_CIRCLE - GAP_SQUARE) * p;
+        const x = offsetX + col * CELL + gap;
+        const y = offsetY + row * CELL + gap;
+        const w = CELL - gap * 2;
+        const h = CELL - gap * 2;
+        const maxR = Math.min(w, h) / 2;
+        const cornerR = p * maxR * DOT_SCALE;
+
+        ctx.fillStyle = colour;
+        ctx.beginPath();
+        if (typeof ctx.roundRect === 'function') {
+            ctx.roundRect(x, y, w, h, cornerR);
+        } else {
+            pathRoundRect(x, y, w, h, cornerR);
+        }
+        ctx.fill();
+    }
+
+    function updateShapeMorph(deltaSec) {
+        const target = hasSelectedCase() ? 1 : 0;
+        const step = SHAPE_MORPH_PER_SEC * deltaSec;
+        if (shapeProgress < target) {
+            shapeProgress = Math.min(target, shapeProgress + step);
+        } else if (shapeProgress > target) {
+            shapeProgress = Math.max(target, shapeProgress - step);
+        }
+    }
 
     function draw() {
         ctx.clearRect(0, 0, logicalWidth, logicalHeight);
@@ -211,13 +269,8 @@
             for (let c = 0; c < cols; c++) {
                 const idx = r * cols + c;
                 if (grid[idx] > 0) {
-                    ctx.fillStyle = colourMap.get(idx) || '#000';
-                    ctx.fillRect(
-                        offsetX + c * CELL + GAP,
-                        offsetY + r * CELL + GAP,
-                        CELL - GAP * 2,
-                        CELL - GAP * 2
-                    );
+                    const colour = colourMap.get(idx) || '#000';
+                    fillCellByProgress(r, c, colour, shapeProgress);
                 }
             }
         }
@@ -301,37 +354,31 @@
             snapshot = new Uint8Array(grid);
             stagnationCounter = 0;
         }
-
-        if (genEl) genEl.textContent = generation;
-        draw();
     }
 
     // --- Animation loop ---
     function loop(timestamp) {
         if (!running) return;
+        if (lastMorphTime === null) lastMorphTime = timestamp;
+        const dt = Math.min(0.05, (timestamp - lastMorphTime) / 1000);
+        lastMorphTime = timestamp;
+        updateShapeMorph(dt);
         if (timestamp - lastTick >= TICK_MS) {
             lastTick = timestamp;
             step();
         }
+        draw();
         rafId = requestAnimationFrame(loop);
     }
 
     function play() {
         running = true;
-        if (btnPlay) {
-            btnPlay.classList.add('active');
-            btnPlay.textContent = 'Pause';
-        }
         lastTick = performance.now();
         rafId = requestAnimationFrame(loop);
     }
 
     function pause() {
         running = false;
-        if (btnPlay) {
-            btnPlay.classList.remove('active');
-            btnPlay.textContent = 'Play';
-        }
         if (rafId) cancelAnimationFrame(rafId);
     }
 
@@ -353,13 +400,7 @@
             grid[r * cols + c] = val ? 1 : 0;
             ctx.clearRect(offsetX + c * CELL, offsetY + r * CELL, CELL, CELL);
             if (val) {
-                ctx.fillStyle = '#000';
-                ctx.fillRect(
-                    offsetX + c * CELL + GAP,
-                    offsetY + r * CELL + GAP,
-                    CELL - GAP * 2,
-                    CELL - GAP * 2
-                );
+                fillCellByProgress(r, c, '#000', shapeProgress);
             }
         }
     }
@@ -467,50 +508,6 @@
         pointerMove(e);
     }, { passive: false });
     window.addEventListener('touchend', () => pointerUp());
-
-    // --- Controls (optional, only if buttons exist) ---
-    const btnPlay = document.getElementById('btn-play');
-    const btnStep = document.getElementById('btn-step');
-    const btnClear = document.getElementById('btn-clear');
-    const btnRandom = document.getElementById('btn-random');
-
-    if (btnPlay) {
-        btnPlay.addEventListener('click', () => {
-            running ? pause() : play();
-        });
-    }
-
-    if (btnStep) {
-        btnStep.addEventListener('click', () => {
-            if (running) pause();
-            step();
-        });
-    }
-
-    if (btnClear) {
-        btnClear.addEventListener('click', () => {
-            if (running) pause();
-            grid.fill(0);
-            generation = 0;
-            snapshot = null;
-            stagnationCounter = 0;
-            if (genEl) genEl.textContent = generation;
-            draw();
-        });
-    }
-
-    if (btnRandom) {
-        btnRandom.addEventListener('click', () => {
-            for (let i = 0; i < grid.length; i++) {
-                grid[i] = Math.random() < 0.25 ? 1 : 0;
-            }
-            generation = 0;
-            snapshot = null;
-            stagnationCounter = 0;
-            if (genEl) genEl.textContent = generation;
-            draw();
-        });
-    }
 
     // --- Init ---
     window.addEventListener('resize', resize);

@@ -58,7 +58,8 @@ button {
         font-size: 2rem;
 
 
-        &.fade-out { opacity: 0; };    }
+        &.fade-out { opacity: 0; }
+    }
 
     .btn-text-white-wrapper {
         position: absolute;

@@ -50,8 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
         pendingX = px;
         if (rafId != null) return;
 
-        var req = window.requestAnimationFrame || function (cb) { return setTimeout(cb, 16); };
-        rafId = req(function () {
+        rafId = requestAnimationFrame(function () {
             rafId = null;
             if (pendingX == null) return;
             slider.style.transform = pendingX === 0
@@ -73,7 +72,6 @@ document.addEventListener('DOMContentLoaded', function () {
     function snapTo(index) {
         var isDesktop = window.matchMedia(DESKTOP_BREAKPOINT).matches;
         if (isDesktop) index = 0; /* work page removed on desktop */
-        var w = viewportWidth || getWidth();
         updateNavLayout();
         slider.style.transition = 'transform 0.32s cubic-bezier(0.2, 0.9, 0.2, 1)';
         setActiveIndex(index);
@@ -107,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
         startX = touch.clientX;
         startY = touch.clientY;
         lastX = startX;
-        lastT = performance.now ? performance.now() : Date.now();
+        lastT = performance.now();
         isTracking = true;
         isHorizontal = null;
         slider.style.transition = 'none';
@@ -143,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function () {
         setTranslateX(next);
 
         lastX = touch.clientX;
-        lastT = performance.now ? performance.now() : Date.now();
+        lastT = performance.now();
     }, { passive: false });
 
     viewport.addEventListener('touchend', function (event) {
@@ -157,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var dy = touch.clientY - startY;
         if (isHorizontal !== true) return;
 
-        var now = performance.now ? performance.now() : Date.now();
+        var now = performance.now();
         var dt = Math.max(1, now - lastT);
         var v = (touch.clientX - lastX) / dt; // px/ms (positive = right)
 

@@ -45,6 +45,47 @@
         return program;
     }
 
+    var SHARED_VERTEX_SOURCE = [
+        'attribute vec2 a_pos;',
+        'attribute vec2 a_uv;',
+        'varying vec2 v_uv;',
+        'void main() {',
+        '  v_uv = vec2(a_uv.x, 1.0 - a_uv.y);',
+        '  gl_Position = vec4(a_pos, 0.0, 1.0);',
+        '}'
+    ].join('\n');
+
+    var BAYER4X4_GLSL = [
+        'float bayer4x4(vec2 p) {',
+        '  vec2 f = mod(p, 4.0);',
+        '  float x = f.x;',
+        '  float y = f.y;',
+        '  float index = 0.0;',
+        '  if (y < 0.5) {',
+        '    if (x < 0.5) index = 0.0;',
+        '    else if (x < 1.5) index = 8.0;',
+        '    else if (x < 2.5) index = 2.0;',
+        '    else index = 10.0;',
+        '  } else if (y < 1.5) {',
+        '    if (x < 0.5) index = 12.0;',
+        '    else if (x < 1.5) index = 4.0;',
+        '    else if (x < 2.5) index = 14.0;',
+        '    else index = 6.0;',
+        '  } else if (y < 2.5) {',
+        '    if (x < 0.5) index = 3.0;',
+        '    else if (x < 1.5) index = 11.0;',
+        '    else if (x < 2.5) index = 1.0;',
+        '    else index = 9.0;',
+        '  } else {',
+        '    if (x < 0.5) index = 15.0;',
+        '    else if (x < 1.5) index = 7.0;',
+        '    else if (x < 2.5) index = 13.0;',
+        '    else index = 5.0;',
+        '  }',
+        '  return (index + 0.5) / 16.0;',
+        '}'
+    ].join('\n');
+
     function createDitheredVideoElement(videoEl, options) {
         options = options || {};
         var wrapper = document.createElement('div');
@@ -71,16 +112,6 @@
             return wrapper;
         }
 
-        var vertexSource = [
-            'attribute vec2 a_pos;',
-            'attribute vec2 a_uv;',
-            'varying vec2 v_uv;',
-            'void main() {',
-            '  v_uv = vec2(a_uv.x, 1.0 - a_uv.y);',
-            '  gl_Position = vec4(a_pos, 0.0, 1.0);',
-            '}'
-        ].join('\n');
-
         var fragmentSource = [
             'precision mediump float;',
             'uniform sampler2D u_texture;',
@@ -92,34 +123,7 @@
             'uniform vec2 u_velocity;',
             'varying vec2 v_uv;',
             '',
-            'float bayer4x4(vec2 p) {',
-            '  vec2 f = mod(p, 4.0);',
-            '  float x = f.x;',
-            '  float y = f.y;',
-            '  float index = 0.0;',
-            '  if (y < 0.5) {',
-            '    if (x < 0.5) index = 0.0;',
-            '    else if (x < 1.5) index = 8.0;',
-            '    else if (x < 2.5) index = 2.0;',
-            '    else index = 10.0;',
-            '  } else if (y < 1.5) {',
-            '    if (x < 0.5) index = 12.0;',
-            '    else if (x < 1.5) index = 4.0;',
-            '    else if (x < 2.5) index = 14.0;',
-            '    else index = 6.0;',
-            '  } else if (y < 2.5) {',
-            '    if (x < 0.5) index = 3.0;',
-            '    else if (x < 1.5) index = 11.0;',
-            '    else if (x < 2.5) index = 1.0;',
-            '    else index = 9.0;',
-            '  } else {',
-            '    if (x < 0.5) index = 15.0;',
-            '    else if (x < 1.5) index = 7.0;',
-            '    else if (x < 2.5) index = 13.0;',
-            '    else index = 5.0;',
-            '  }',
-            '  return (index + 0.5) / 16.0;',
-            '}',
+            BAYER4X4_GLSL,
             '',
             'void main() {',
             '  vec2 centered = v_uv - 0.5;',
@@ -142,7 +146,7 @@
 
         var program;
         try {
-            program = createProgram(gl, vertexSource, fragmentSource);
+            program = createProgram(gl, SHARED_VERTEX_SOURCE, fragmentSource);
         } catch (error) {
             console.error(error);
             wrapper.removeChild(canvas);
@@ -298,16 +302,6 @@
         });
         if (!gl) return null;
 
-        var vertexSource = [
-            'attribute vec2 a_pos;',
-            'attribute vec2 a_uv;',
-            'varying vec2 v_uv;',
-            'void main() {',
-            '  v_uv = vec2(a_uv.x, 1.0 - a_uv.y);',
-            '  gl_Position = vec4(a_pos, 0.0, 1.0);',
-            '}'
-        ].join('\n');
-
         var fragmentSource = [
             'precision mediump float;',
             'uniform sampler2D u_texture;',
@@ -324,34 +318,7 @@
             'uniform float u_shadowStrength;',
             'varying vec2 v_uv;',
             '',
-            'float bayer4x4(vec2 p) {',
-            '  vec2 f = mod(p, 4.0);',
-            '  float x = f.x;',
-            '  float y = f.y;',
-            '  float index = 0.0;',
-            '  if (y < 0.5) {',
-            '    if (x < 0.5) index = 0.0;',
-            '    else if (x < 1.5) index = 8.0;',
-            '    else if (x < 2.5) index = 2.0;',
-            '    else index = 10.0;',
-            '  } else if (y < 1.5) {',
-            '    if (x < 0.5) index = 12.0;',
-            '    else if (x < 1.5) index = 4.0;',
-            '    else if (x < 2.5) index = 14.0;',
-            '    else index = 6.0;',
-            '  } else if (y < 2.5) {',
-            '    if (x < 0.5) index = 3.0;',
-            '    else if (x < 1.5) index = 11.0;',
-            '    else if (x < 2.5) index = 1.0;',
-            '    else index = 9.0;',
-            '  } else {',
-            '    if (x < 0.5) index = 15.0;',
-            '    else if (x < 1.5) index = 7.0;',
-            '    else if (x < 2.5) index = 13.0;',
-            '    else index = 5.0;',
-            '  }',
-            '  return (index + 0.5) / 16.0;',
-            '}',
+            BAYER4X4_GLSL,
             '',
             'void main() {',
             '  vec2 fragPx = v_uv * u_resolution;',
@@ -397,7 +364,7 @@
 
         var program;
         try {
-            program = createProgram(gl, vertexSource, fragmentSource);
+            program = createProgram(gl, SHARED_VERTEX_SOURCE, fragmentSource);
         } catch (error) {
             console.error(error);
             return null;

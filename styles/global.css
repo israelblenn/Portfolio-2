@@ -283,7 +283,7 @@ canvas#life {
     right: 0;
     width: 5.5rem;
     height: 5.5rem;
-    display: flex;
+    display: none;
     opacity: 0;
     transition: opacity 0.32s cubic-bezier(0.2, 0.9, 0.2, 1);
     user-select: none;
@@ -302,7 +302,6 @@ canvas#life {
         position: absolute;
         inset: 0;
         display: flex;
-        text-align: center;
         pointer-events: none;
         transition: opacity 0.18s ease;
         text-align: right;
@@ -386,6 +385,10 @@ canvas#life {
 
     .contact-tab {
         display: none;
+    }
+
+    #tool-tip {
+        display: flex;
     }
 
     #desktop-case-preview {
