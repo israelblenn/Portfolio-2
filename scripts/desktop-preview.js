@@ -178,11 +178,6 @@
             var size = computeVideoSize();
             renderer.setCenter(center.x, center.y);
             renderer.setSize(size.w, size.h);
-            if (typeof renderer.setShadowStrength === 'function') {
-                var effectiveScale = desktopPreviewScale * (1 + desktopPreviewLiftBoost);
-                var t = clamp((effectiveScale - 0.5) / 0.5, 0, 1);
-                renderer.setShadowStrength(t);
-            }
             if (desktopPreviewHitArea) {
                 desktopPreviewHitArea.style.width = size.w + 'px';
                 desktopPreviewHitArea.style.height = size.h + 'px';
@@ -369,12 +364,17 @@
             var startPointerX = 0, startPointerY = 0;
             var startOffsetX = 0, startOffsetY = 0;
             var samples = [];
-            var MAX_SAMPLES = 3;
+            var MAX_SAMPLES = 8;
             var velX = 0, velY = 0;
             var FRICTION = 0.92;
             var VELOCITY_THRESHOLD = 0.5;
-            var WARP_SCALE = 1.0 / 95.0;
+            var WARP_SCALE = 1.0 / 102.0;
+            var MAX_WARP_VEL = 270;
+            var WARP_VEL_SMOOTH = 0.28;
+            var WARP_VEL_SMOOTH_MOMENTUM = 0.38;
+            var MIN_DT_MS = 10;
             var motionWarpX = 0, motionWarpY = 0;
+            var warpVelSmoothX = 0, warpVelSmoothY = 0;
             var wheelWarpX = 0, wheelWarpY = 0;
             var zoomWarp = 0;
             var wheelWarpRafId = null;
@@ -435,14 +435,37 @@
                 if (samples.length > MAX_SAMPLES) samples.shift();
             }
 
+            function clampWarpVelocity(vx, vy) {
+                var len = Math.sqrt(vx * vx + vy * vy);
+                if (len <= MAX_WARP_VEL || len < 1e-6) return { vx: vx, vy: vy };
+                var s = MAX_WARP_VEL / len;
+                return { vx: vx * s, vy: vy * s };
+            }
+
+            function smoothWarpToward(tx, ty, alpha) {
+                warpVelSmoothX += (tx - warpVelSmoothX) * alpha;
+                warpVelSmoothY += (ty - warpVelSmoothY) * alpha;
+            }
+
             function computeVelocity() {
                 if (samples.length < 2) return { vx: 0, vy: 0 };
-                var first = samples[0];
-                var last = samples[samples.length - 1];
-                var dt = last.t - first.t;
-                if (dt < 1) return { vx: 0, vy: 0 };
-                var scale = 16.67 / dt;
-                return { vx: (last.x - first.x) * scale, vy: (last.y - first.y) * scale };
+                var totalVx = 0;
+                var totalVy = 0;
+                var weight = 0;
+                for (var i = 1; i < samples.length; i++) {
+                    var a = samples[i - 1];
+                    var b = samples[i];
+                    var dt = b.t - a.t;
+                    if (dt < 0.5) continue;
+                    var effDt = Math.max(dt, MIN_DT_MS);
+                    var scale = 16.67 / effDt;
+                    var w = dt;
+                    totalVx += (b.x - a.x) * scale * w;
+                    totalVy += (b.y - a.y) * scale * w;
+                    weight += w;
+                }
+                if (weight < 1e-6) return { vx: 0, vy: 0 };
+                return { vx: totalVx / weight, vy: totalVy / weight };
             }
 
             function momentumLoop() {
@@ -454,13 +477,17 @@
                 desktopPreviewDragOffsetX += velX;
                 desktopPreviewDragOffsetY += velY;
                 updateRendererTransform();
-                motionWarpX = velX;
-                motionWarpY = velY;
+                var wv = clampWarpVelocity(velX, velY);
+                smoothWarpToward(wv.vx, wv.vy, WARP_VEL_SMOOTH_MOMENTUM);
+                motionWarpX = warpVelSmoothX;
+                motionWarpY = warpVelSmoothY;
                 applyShaderVelocity();
 
                 if (Math.abs(velX) < VELOCITY_THRESHOLD && Math.abs(velY) < VELOCITY_THRESHOLD) {
                     velX = 0;
                     velY = 0;
+                    warpVelSmoothX = 0;
+                    warpVelSmoothY = 0;
                     motionWarpX = 0;
                     motionWarpY = 0;
                     applyShaderVelocity();
@@ -476,9 +503,11 @@
                 desktopPreviewDragOffsetY = startOffsetY + (event.clientY - startPointerY);
                 updateRendererTransform();
                 addSample(event.clientX, event.clientY);
-                var vel = computeVelocity();
-                motionWarpX = vel.vx;
-                motionWarpY = vel.vy;
+                var inst = computeVelocity();
+                var vel = clampWarpVelocity(inst.vx, inst.vy);
+                smoothWarpToward(vel.vx, vel.vy, WARP_VEL_SMOOTH);
+                motionWarpX = warpVelSmoothX;
+                motionWarpY = warpVelSmoothY;
                 applyShaderVelocity();
             }
 
@@ -535,6 +564,8 @@
                 if (Math.abs(velX) > VELOCITY_THRESHOLD || Math.abs(velY) > VELOCITY_THRESHOLD) {
                     desktopPreviewMomentumRafId = requestAnimationFrame(momentumLoop);
                 } else {
+                    warpVelSmoothX = 0;
+                    warpVelSmoothY = 0;
                     motionWarpX = 0;
                     motionWarpY = 0;
                     applyShaderVelocity();
@@ -545,6 +576,8 @@
                 if (event.button !== 0) return;
                 if (!desktopPreviewActiveVideo) return;
                 cancelMomentum();
+                warpVelSmoothX = 0;
+                warpVelSmoothY = 0;
                 motionWarpX = 0;
                 motionWarpY = 0;
                 applyShaderVelocity();
@@ -577,6 +610,8 @@
             desktopPreviewResetInteractionWarps = function() {
                 motionWarpX = 0;
                 motionWarpY = 0;
+                warpVelSmoothX = 0;
+                warpVelSmoothY = 0;
                 wheelWarpX = 0;
                 wheelWarpY = 0;
                 zoomWarp = 0;

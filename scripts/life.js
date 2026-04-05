@@ -189,8 +189,7 @@
 
     // --- Drawing ---
     const GAP_SQUARE = 1; // Original square-cell inset (white outline between cells)
-    const GAP_CIRCLE = 0.5; // Tighter inset so circles read larger on the same grid
-    const DOT_SCALE = 0.92;
+    const GAP_CIRCLE = 0.82; // Circle mode inset (between tight 0.5 and strong 1.12); p=0 still uses GAP_SQUARE only
 
     function hasSelectedCase() {
         return !!document.querySelector('.work-case--selected, .nav-bar-case--selected');
@@ -219,14 +218,23 @@
         const w = CELL - gap * 2;
         const h = CELL - gap * 2;
         const maxR = Math.min(w, h) / 2;
-        const cornerR = p * maxR * DOT_SCALE;
+        const cx = x + w / 2;
+        const cy = y + h / 2;
 
         ctx.fillStyle = colour;
         ctx.beginPath();
-        if (typeof ctx.roundRect === 'function') {
-            ctx.roundRect(x, y, w, h, cornerR);
+        if (p >= 1) {
+            // True circle — avoids roundRect + radius tuning that reads as a squircle
+            ctx.arc(cx, cy, maxR, 0, Math.PI * 2);
+        } else if (p <= 0) {
+            ctx.rect(x, y, w, h);
         } else {
-            pathRoundRect(x, y, w, h, cornerR);
+            const cornerR = p * maxR;
+            if (typeof ctx.roundRect === 'function') {
+                ctx.roundRect(x, y, w, h, cornerR);
+            } else {
+                pathRoundRect(x, y, w, h, cornerR);
+            }
         }
         ctx.fill();
     }

@@ -154,6 +154,19 @@ canvas#life {
     }
 }
 
+.copyright {
+    position: absolute;
+    bottom: 2rem;
+    width: calc(100vw - 8rem);
+}
+
+.signature {
+    position: absolute;
+    bottom: 0;
+    right: -1rem;
+    height: 11rem;
+}
+
 /* VIDEO DITHERING ==================================================================================================== */
 
 .dither-video-canvas {
@@ -339,6 +352,7 @@ canvas#life {
     display: none;
 }
 
+
 /* DESKTOP LAYOUT ==================================================================================================== */
 
 
@@ -379,11 +393,7 @@ canvas#life {
         min-height: 0;
     }
 
-    .page-work {
-        display: none;
-    }
-
-    .contact-tab {
+    .page-work, .contact-tab, .copyright {
         display: none;
     }
 
