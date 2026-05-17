@@ -18,20 +18,24 @@
         var contactBtnHeight = contactBtn ? Math.ceil(contactBtn.getBoundingClientRect().height) : 0;
         var fixedHeight = homeBtnHeight + contactBtnHeight;
 
-        var contentHeights = [];
-        var sumContent = 0;
-        for (var j = 0; j < navCases.length; j++) {
-            var h = Math.ceil(navCases[j].getBoundingClientRect().height);
-            contentHeights.push(h);
-            sumContent += h;
-        }
-
         var ticking = false;
         function sync() {
             var vv = window.visualViewport;
             var layoutHeight = document.documentElement.clientHeight;
             var height = (vv && vv.height > 0 && vv.height >= layoutHeight * 0.85) ? vv.height : layoutHeight;
             if (height > 0) navBar.style.height = Math.round(height) + 'px';
+
+            // Re-measure each pass so late font/text metric changes on iOS
+            // never leave the case boxes undersized.
+            var contentHeights = [];
+            var sumContent = 0;
+            for (var j = 0; j < navCases.length; j++) navCases[j].style.height = '';
+            for (var k = 0; k < navCases.length; k++) {
+                var h = Math.ceil(navCases[k].scrollHeight);
+                contentHeights.push(h);
+                sumContent += h;
+            }
+
             var navBarTop = navBar.getBoundingClientRect().top;
             var remaining = Math.max(0, navBar.clientHeight - fixedHeight - sumContent);
             var currentTop = homeBtnHeight;
@@ -60,6 +64,10 @@
         if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', requestSync);
             window.visualViewport.addEventListener('scroll', requestSync);
+        }
+        window.addEventListener('load', requestSync);
+        if (document.fonts && typeof document.fonts.addEventListener === 'function') {
+            document.fonts.addEventListener('loadingdone', requestSync);
         }
         new ResizeObserver(requestSync).observe(workCases[0].parentElement);
         requestSync();
