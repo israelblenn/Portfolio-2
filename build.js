@@ -16,6 +16,8 @@ const path = require('path');
 const ROOT = __dirname;
 const CONTENT_PATH = path.join(ROOT, 'content.json');
 const HTML_PATH = path.join(ROOT, 'index.html');
+const PUBLIC_DIR = path.join(ROOT, 'public');
+const STATIC_DIRS = ['assets', 'styles', 'scripts'];
 
 function getNestedValue(obj, dotted) {
     return dotted.split('.').reduce(function(cur, key) {
@@ -222,6 +224,28 @@ function renderWorkCases(cases, indent) {
     return lines.join('\n');
 }
 
+function copyDirRecursive(src, dest) {
+    fs.mkdirSync(dest, { recursive: true });
+    fs.readdirSync(src, { withFileTypes: true }).forEach(function(entry) {
+        const srcPath = path.join(src, entry.name);
+        const destPath = path.join(dest, entry.name);
+        if (entry.isDirectory()) copyDirRecursive(srcPath, destPath);
+        else fs.copyFileSync(srcPath, destPath);
+    });
+}
+
+function syncPublicOutput(html) {
+    fs.mkdirSync(PUBLIC_DIR, { recursive: true });
+    fs.writeFileSync(path.join(PUBLIC_DIR, 'index.html'), html, 'utf8');
+    fs.copyFileSync(CONTENT_PATH, path.join(PUBLIC_DIR, 'content.json'));
+    STATIC_DIRS.forEach(function(dir) {
+        const src = path.join(ROOT, dir);
+        if (fs.existsSync(src)) {
+            copyDirRecursive(src, path.join(PUBLIC_DIR, dir));
+        }
+    });
+}
+
 function renderNavBar(cases, indent) {
     const pad = indent || '            ';
     const lines = [];
@@ -264,7 +288,8 @@ function main() {
     html = replaceBetweenMarkers(html, 'nav-bar', renderNavBar(cases));
 
     fs.writeFileSync(HTML_PATH, html, 'utf8');
-    console.log('Built index.html with baked content from content.json');
+    syncPublicOutput(html);
+    console.log('Built index.html and public/ for deploy');
 }
 
 main();
