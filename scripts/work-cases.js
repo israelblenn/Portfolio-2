@@ -603,34 +603,40 @@
             document.head.appendChild(styleEl);
         }
 
+        var measureNavBarWidthsSubscribed = false;
         function measureNavBarWidths() {
             var navBar = document.getElementById('nav-bar');
             if (!navBar || !window.matchMedia('(min-width: 1024px)').matches) return;
-            var children = navBar.children;
-            for (var i = 0; i < children.length; i++) children[i].style.transition = 'none';
 
-            var saved = navBar.dataset.expanded;
-            delete navBar.dataset.expanded;
-            for (var j = 0; j < children.length; j++) children[j].style.setProperty('--collapsed-basis', 'auto');
-            navBar.offsetWidth;
-
-            for (var k = 0; k < children.length; k++) {
-                var w = children[k].getBoundingClientRect().width;
-                children[k].style.setProperty('--collapsed-basis', w + 'px');
+            // Derive every collapsed width from text metrics rather than a throwaway
+            // layout pass. This avoids any flash where the nav repaints with the
+            // wrong sizes while waiting for fonts/layout to settle on iOS WebKit.
+            var pm = window.pretextMeasure;
+            var caseElements = navBar.querySelectorAll('[data-expand]');
+            for (var i = 0; i < caseElements.length; i++) {
+                var el = caseElements[i];
+                var width;
+                if (pm) {
+                    width = pm.measureInlineBoxWidth(el);
+                } else {
+                    width = el.getBoundingClientRect().width;
+                }
+                // Cushion for subpixel rounding so the label never clips.
+                el.style.setProperty('--collapsed-basis', (Math.ceil(width) + 1) + 'px');
             }
 
-            if (typeof saved === 'string' && saved.length > 0) navBar.dataset.expanded = saved;
-            else delete navBar.dataset.expanded;
-            navBar.offsetWidth;
-
             requestAnimationFrame(function() {
-                for (var i = 0; i < children.length; i++) children[i].style.transition = '';
                 var initialIndex = parseInt(navBar.dataset.expanded, 10) || 0;
                 if (navBarDesc && typeof descLeftForIndexRef === 'function') {
                     navBarDesc.style.left = descLeftForIndexRef(initialIndex) + 'px';
                 }
                 if (typeof updateDeadZoneRef === 'function') updateDeadZoneRef();
             });
+
+            if (!measureNavBarWidthsSubscribed && pm && typeof pm.onChange === 'function') {
+                measureNavBarWidthsSubscribed = true;
+                pm.onChange(measureNavBarWidths);
+            }
         }
 
         function onResize() {

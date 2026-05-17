@@ -59,11 +59,15 @@
                 }
             });
 
-            if (document.fonts && typeof document.fonts.ready !== 'undefined') {
-                document.fonts.ready.then(afterContentAndFonts);
-            } else {
-                afterContentAndFonts();
-            }
+            // Wait for both fonts AND pretext so the very first measurement pass
+            // already uses accurate text metrics — no post-paint correction.
+            var fontsReady = (document.fonts && typeof document.fonts.ready !== 'undefined')
+                ? document.fonts.ready
+                : Promise.resolve();
+            var pretextReady = (window.pretextMeasure && typeof window.pretextMeasure.whenReady === 'function')
+                ? window.pretextMeasure.whenReady()
+                : Promise.resolve();
+            Promise.all([fontsReady, pretextReady]).then(afterContentAndFonts, afterContentAndFonts);
         })
         .catch(function(error) {
             console.error('Error loading content:', error);
