@@ -28,7 +28,7 @@ button {
 
     position: relative;
     overflow: hidden;
-    background-color: hsl(0 0 80);
+    background-color: hsl(0 0% 80%);
     border: 0;
     padding: 1rem 2rem;
     width: 72px;
@@ -118,7 +118,7 @@ button {
         color: #000;
         background-color: rgb(105, 255, 105);
         transition: background-color 0.5s ease;
-        &.sent-fade { background-color: hsl(0 0 80); }
+        &.sent-fade { background-color: hsl(0 0% 80%); }
 
         .btn-text-white-wrapper { opacity: 1; }
         .btn-text-white { transform: translateX(0); }
