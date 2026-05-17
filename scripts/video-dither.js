@@ -86,17 +86,34 @@
         '}'
     ].join('\n');
 
-    function createDitheredVideoElement(videoEl, options) {
+    function createDitheredVideoElement(videoEl, options, existingWrapper) {
         options = options || {};
-        var wrapper = document.createElement('div');
-        wrapper.className = 'dither-video';
-        wrapper.style.aspectRatio = '16 / 9';
-        wrapper.classList.add('dither-video--suppress-transition');
+        var wrapper, canvas;
+        if (existingWrapper) {
+            wrapper = existingWrapper;
+            wrapper.classList.add('dither-video');
+            wrapper.classList.add('dither-video--suppress-transition');
+            if (!wrapper.style.aspectRatio) wrapper.style.aspectRatio = '16 / 9';
+            canvas = wrapper.querySelector('canvas.dither-video-canvas');
+            if (!canvas) {
+                canvas = document.createElement('canvas');
+                canvas.className = 'dither-video-canvas';
+                wrapper.insertBefore(canvas, wrapper.firstChild);
+            }
+            if (videoEl.parentNode !== wrapper) {
+                wrapper.appendChild(videoEl);
+            }
+        } else {
+            wrapper = document.createElement('div');
+            wrapper.className = 'dither-video';
+            wrapper.style.aspectRatio = '16 / 9';
+            wrapper.classList.add('dither-video--suppress-transition');
 
-        var canvas = document.createElement('canvas');
-        canvas.className = 'dither-video-canvas';
-        wrapper.appendChild(canvas);
-        wrapper.appendChild(videoEl);
+            canvas = document.createElement('canvas');
+            canvas.className = 'dither-video-canvas';
+            wrapper.appendChild(canvas);
+            wrapper.appendChild(videoEl);
+        }
 
         var gl = canvas.getContext('webgl', {
             alpha: false,

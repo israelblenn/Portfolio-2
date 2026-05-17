@@ -4,6 +4,82 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Independent design practice focused on websites and brand identity. I burn rubber at the intersection of clean gridded typography and POMA (the principle of most astonishment)">
+    <meta property="og:title" content="Israel Blennerhassett">
+    <meta property="og:description" content="Independent design practice focused on websites and brand identity. I burn rubber at the intersection of clean gridded typography and POMA (the principle of most astonishment)">
+    <meta property="og:type" content="website">
+    <!-- BUILD:canonical:start -->
+    <link rel="canonical" href="https://israelblennerhassett.com/">
+    <meta property="og:url" content="https://israelblennerhassett.com/">
+<!-- BUILD:canonical:end -->
+    <!-- BUILD:json-ld:start -->
+    <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "WebSite",
+            "@id": "https://israelblennerhassett.com/#website",
+            "url": "https://israelblennerhassett.com/",
+            "name": "Israel Blennerhassett",
+            "description": "Independent design practice focused on websites and brand identity. I burn rubber at the intersection of clean gridded typography and POMA (the principle of most astonishment)",
+            "publisher": {
+                "@id": "https://israelblennerhassett.com/#person"
+            }
+        },
+        {
+            "@type": "Person",
+            "@id": "https://israelblennerhassett.com/#person",
+            "name": "Israel Blennerhassett",
+            "description": "Independent design practice focused on websites and brand identity. I burn rubber at the intersection of clean gridded typography and POMA (the principle of most astonishment)",
+            "url": "https://israelblennerhassett.com/",
+            "email": "hi@israelblennerhassett.com",
+            "telephone": "+61 422 544 376"
+        },
+        {
+            "@type": "CreativeWork",
+            "@id": "https://israelblennerhassett.com/#work-0",
+            "name": "The Harbour Agency",
+            "description": "Building a website for a leading Sydney music agency designed around a unique modular page structure. It features a highly interactive roster brimming with dynamic animations that contrast bold Swiss-style geometry against a minimalist slate backdrop.",
+            "creator": {
+                "@id": "https://israelblennerhassett.com/#person"
+            },
+            "contentUrl": "https://israelblennerhassett.com/assets/THA108030.mp4"
+        },
+        {
+            "@type": "CreativeWork",
+            "@id": "https://israelblennerhassett.com/#work-1",
+            "name": "Mark Bo Chu",
+            "description": "Designing and building a personal website and shop for Melbourne-based artist, writer and complexity scientist. Featuring novel layouts and engaging interactive experiences, grounded in minimalist design principles and UX sensibilities.",
+            "creator": {
+                "@id": "https://israelblennerhassett.com/#person"
+            },
+            "contentUrl": "https://israelblennerhassett.com/assets/MBC108030.mp4"
+        },
+        {
+            "@type": "CreativeWork",
+            "@id": "https://israelblennerhassett.com/#work-2",
+            "name": "Lismore Baptist",
+            "description": "Re-imagining the visual identity of a local church — which involved creating a feature-rich website among multiple other pieces of branded material. The site includes a custom built database and platform that allows church members to stream archived sermons online.",
+            "creator": {
+                "@id": "https://israelblennerhassett.com/#person"
+            },
+            "contentUrl": "https://israelblennerhassett.com/assets/LBC108030.mp4"
+        },
+        {
+            "@type": "CreativeWork",
+            "@id": "https://israelblennerhassett.com/#work-3",
+            "name": "Your Sky",
+            "description": "A first-of-its-kind light pollution simulation web app designed and produced in collaboration with two other design students for the Murry River International Dark Sky Reserve. Made possible through the integration of multiple 3rd party APIs.",
+            "creator": {
+                "@id": "https://israelblennerhassett.com/#person"
+            },
+            "contentUrl": "https://israelblennerhassett.com/assets/YS108030.mp4"
+        }
+    ]
+}
+    </script>
+<!-- BUILD:json-ld:end -->
     <title data-content="site.title">Israel Blennerhassett</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,10 +94,10 @@
             <section class="page">
                 <canvas id="life"></canvas>
                 <div class="home">
-                    <p data-content="home.headline" data-content-emphasis="home.description"></p> <!-- !! rename? -->
+                    <p data-content="home.headline" data-content-emphasis="home.description">Independent design practice focused on websites and brand identity. <em>I burn rubber at the intersection of clean gridded typography and POMA (the principle of <i>most</i> astonishment)</em></p>
                     <div class="contacts">
-                        <span data-content="contact.email"></span>
-                        <span data-content="contact.phone"></span>
+                        <span data-content="contact.email">hi@israelblennerhassett.com</span>
+                        <span data-content="contact.phone">+61 422 544 376</span>
                     </div>
                 </div>
                 <div class="contact-tab">Contact</div>
@@ -47,10 +123,57 @@
                     </div>
                 </div>
             </section>
-            <div class="nav-bar" id="nav-bar"></div>
+            <div class="nav-bar" id="nav-bar" data-prebuilt>
+                <!-- BUILD:nav-bar:start -->
+            <div class="nav-bar-home">¿</div>
+            <div class="nav-bar-case" data-expand="0" style="background-color: #FF4338">The Harbour Agency</div>
+            <div class="nav-bar-case" data-expand="1" style="background-color: #0051FF">Mark Bo Chu</div>
+            <div class="nav-bar-case" data-expand="2" style="background-color: #FFBA3A">Lismore Baptist</div>
+            <div class="nav-bar-case" data-expand="3" style="background-color: #697898">Your Sky</div>
+<!-- BUILD:nav-bar:end -->
+            </div>
             <div id="tool-tip" aria-hidden="true"></div>
             <section class="page page-work">
-                <div class="work-cases" id="work-cases" aria-label="Work"></div>
+                <div class="work-cases" id="work-cases" aria-label="Work" data-prebuilt>
+                    <!-- BUILD:work-cases:start -->
+                <div class="work-case" style="background-color: #FF4338">
+                    <p>Building a website for a leading Sydney music agency designed around a unique modular page structure. It features a highly interactive roster brimming with dynamic animations that contrast bold Swiss-style geometry against a minimalist slate backdrop.</p>
+                    <div class="dither-video dither-video--suppress-transition" style="aspect-ratio: 16 / 9;">
+                        <canvas class="dither-video-canvas"></canvas>
+                        <video autoplay loop muted playsinline>
+                            <source src="assets/THA108030.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                </div>
+                <div class="work-case" style="background-color: #0051FF">
+                    <p>Designing and building a personal website and shop for Melbourne-based artist, writer and complexity scientist. Featuring novel layouts and engaging interactive experiences, grounded in minimalist design principles and UX sensibilities.</p>
+                    <div class="dither-video dither-video--suppress-transition" style="aspect-ratio: 16 / 9;">
+                        <canvas class="dither-video-canvas"></canvas>
+                        <video autoplay loop muted playsinline>
+                            <source src="assets/MBC108030.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                </div>
+                <div class="work-case" style="background-color: #FFBA3A">
+                    <p>Re-imagining the visual identity of a local church — which involved creating a feature-rich website among multiple other pieces of branded material. The site includes a custom built database and platform that allows church members to stream archived sermons online.</p>
+                    <div class="dither-video dither-video--suppress-transition" style="aspect-ratio: 16 / 9;">
+                        <canvas class="dither-video-canvas"></canvas>
+                        <video autoplay loop muted playsinline>
+                            <source src="assets/LBC108030.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                </div>
+                <div class="work-case" style="background-color: #697898">
+                    <p>A first-of-its-kind light pollution simulation web app designed and produced in collaboration with two other design students for the Murry River International Dark Sky Reserve. Made possible through the integration of multiple 3rd party APIs.</p>
+                    <div class="dither-video dither-video--suppress-transition" style="aspect-ratio: 16 / 9;">
+                        <canvas class="dither-video-canvas"></canvas>
+                        <video autoplay loop muted playsinline>
+                            <source src="assets/YS108030.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                </div>
+<!-- BUILD:work-cases:end -->
+                </div>
             </section>
         </div>
     </div>

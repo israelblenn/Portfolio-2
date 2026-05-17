@@ -10,6 +10,12 @@
         element.textContent = value;
     }
 
+    function stripHtml(html) {
+        var div = document.createElement('div');
+        div.innerHTML = html;
+        return div.textContent || div.innerText || '';
+    }
+
     function applySiteContent(content) {
         var titleElement = document.querySelector('title[data-content]');
         if (titleElement) {
@@ -43,6 +49,16 @@
                 setContent(element, mainValue);
             }
         });
+
+        var headline = getNestedValue(content, 'home.headline');
+        var description = getNestedValue(content, 'home.description');
+        if (headline && description) {
+            var metaDescription = headline + ' ' + stripHtml(description);
+            var metaDescEl = document.querySelector('meta[name="description"]');
+            if (metaDescEl) metaDescEl.setAttribute('content', metaDescription);
+            var ogDescEl = document.querySelector('meta[property="og:description"]');
+            if (ogDescEl) ogDescEl.setAttribute('content', metaDescription);
+        }
     }
 
     window.applySiteContent = applySiteContent;

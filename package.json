@@ -1,0 +1,9 @@
+{
+  "name": "israelblennerhassett",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Personal portfolio site for Israel Blennerhassett.",
+  "scripts": {
+    "build": "node build.js"
+  }
+}

@@ -395,13 +395,46 @@
             if (previewModule) previewModule.renderSelectedCase();
         }
 
+        function attachCaseVideoShader(card, caseItem, caseIndex, videoEl, existingWrapper) {
+            if (!videoEl) return;
+            if (typeof window.createDitheredVideoElement === 'function') {
+                var shaderVideo = window.createDitheredVideoElement(videoEl, {
+                    gridSize: 2.0,
+                    pixelation: 2.0,
+                    tintHex: caseItem.colour || '#ffffff',
+                    tintStrength: 1.0
+                }, existingWrapper);
+                card.addEventListener('click', function() { selectCaseByIndex(caseIndex); });
+                shaderCases.push({ card: card, wrapper: shaderVideo });
+                if (!existingWrapper) card.appendChild(shaderVideo);
+            } else if (!existingWrapper) {
+                card.appendChild(videoEl);
+            }
+        }
+
         function buildWorkCases() {
             var workCasesContainer = document.getElementById('work-cases');
             if (!workCasesContainer || !Array.isArray(content.cases)) return;
-            workCasesContainer.innerHTML = '';
 
-            content.cases.forEach(function(caseItem, caseIndex) {
-                if (!caseItem || typeof caseItem !== 'object') return;
+            var prebuilt = workCasesContainer.hasAttribute('data-prebuilt');
+            var validCases = content.cases.filter(function(c) { return c && typeof c === 'object'; });
+
+            if (prebuilt) {
+                var existingCards = workCasesContainer.querySelectorAll('.work-case');
+                validCases.forEach(function(caseItem, caseIndex) {
+                    var card = existingCards[caseIndex];
+                    if (!card) return;
+                    if (caseItem.video) {
+                        var existingWrapper = card.querySelector('.dither-video');
+                        var videoEl = card.querySelector('video');
+                        attachCaseVideoShader(card, caseItem, caseIndex, videoEl, existingWrapper);
+                    }
+                });
+                return;
+            }
+
+            workCasesContainer.innerHTML = '';
+            validCases.forEach(function(caseItem, caseIndex) {
                 var card = document.createElement('div');
                 card.className = 'work-case';
                 if (caseItem.colour) card.style.backgroundColor = caseItem.colour;
@@ -412,20 +445,7 @@
 
                 if (caseItem.video) {
                     var vid = createCaseVideoElement(caseItem.video, false);
-                    if (!vid) return;
-                    if (typeof window.createDitheredVideoElement === 'function') {
-                        var shaderVideo = window.createDitheredVideoElement(vid, {
-                            gridSize: 2.0,
-                            pixelation: 2.0,
-                            tintHex: caseItem.colour || '#ffffff',
-                            tintStrength: 1.0
-                        });
-                        card.addEventListener('click', function() { selectCaseByIndex(caseIndex); });
-                        shaderCases.push({ card: card, wrapper: shaderVideo });
-                        card.appendChild(shaderVideo);
-                    } else {
-                        card.appendChild(vid);
-                    }
+                    attachCaseVideoShader(card, caseItem, caseIndex, vid, null);
                 } else if (caseItem.image) {
                     var img = document.createElement('img');
                     img.src = caseItem.image;
@@ -441,7 +461,9 @@
         function buildNavBar() {
             var navBar = document.getElementById('nav-bar');
             if (!navBar || !Array.isArray(content.cases)) return;
-            navBar.innerHTML = '';
+
+            var prebuilt = navBar.hasAttribute('data-prebuilt');
+            if (!prebuilt) navBar.innerHTML = '';
             navBarCaseItems = [];
 
             if (!navBarDesc) {
@@ -478,9 +500,16 @@
             navBarDesc.textContent = '';
             navBar.dataset.expanded = 'none';
 
-            var homeBtn = document.createElement('div');
-            homeBtn.className = 'nav-bar-home';
-            homeBtn.textContent = homeSymbol;
+            var homeBtn;
+            if (prebuilt) {
+                homeBtn = navBar.querySelector('.nav-bar-home');
+            }
+            if (!homeBtn) {
+                homeBtn = document.createElement('div');
+                homeBtn.className = 'nav-bar-home';
+                homeBtn.textContent = homeSymbol;
+                navBar.appendChild(homeBtn);
+            }
             navMorphCtrl = createMorphController(homeBtn);
             syncHomeButtonIndicator();
             homeBtn.style.cursor = 'pointer';
@@ -490,14 +519,18 @@
                 if (window.snapToPage) window.snapToPage(0);
                 if (viewport) viewport.scrollTo({ top: 0, behavior: 'smooth' });
             });
-            navBar.appendChild(homeBtn);
 
+            var existingNavCases = prebuilt ? navBar.querySelectorAll('.nav-bar-case') : null;
             validCases.forEach(function(caseItem, index) {
-                var caseNav = document.createElement('div');
-                caseNav.className = 'nav-bar-case';
-                caseNav.setAttribute('data-expand', String(index));
-                if (caseItem.colour) caseNav.style.backgroundColor = caseItem.colour;
-                caseNav.textContent = caseItem.name || '';
+                var caseNav = existingNavCases ? existingNavCases[index] : null;
+                if (!caseNav) {
+                    caseNav = document.createElement('div');
+                    caseNav.className = 'nav-bar-case';
+                    caseNav.setAttribute('data-expand', String(index));
+                    if (caseItem.colour) caseNav.style.backgroundColor = caseItem.colour;
+                    caseNav.textContent = caseItem.name || '';
+                    navBar.appendChild(caseNav);
+                }
                 caseNav.style.cursor = 'pointer';
                 caseNav.addEventListener('click', function() {
                     var isDesktop = window.matchMedia('(min-width: 1024px)').matches;
@@ -540,7 +573,6 @@
                         viewport.scrollTo({ top: cappedScrollTop, behavior: 'smooth' });
                     }
                 });
-                navBar.appendChild(caseNav);
                 navBarCaseItems.push(caseNav);
             });
 
