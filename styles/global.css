@@ -478,6 +478,15 @@ canvas#life {
         }
     }
 
+    .nav-bar-home {
+        cursor: pointer;
+    }
+
+    .nav-bar-home--idle {
+        cursor: default;
+        pointer-events: none;
+    }
+
     .nav-bar-contact {
         flex: 0 0 84.5px;
         width: 84.5px;

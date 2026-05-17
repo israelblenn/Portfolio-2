@@ -313,9 +313,18 @@
             };
         }
 
+        function syncHomeButtonInteractivity() {
+            var homeBtn = document.querySelector('.nav-bar-home');
+            if (!homeBtn) return;
+            var idle = window.matchMedia('(min-width: 1024px)').matches && selectedCaseIndex === null;
+            homeBtn.classList.toggle('nav-bar-home--idle', idle);
+            homeBtn.setAttribute('aria-disabled', idle ? 'true' : 'false');
+        }
+
         function syncHomeButtonIndicator() {
             var target = selectedCaseIndex !== null && parsedIcons ? parsedIcons[selectedCaseIndex] : null;
             if (navMorphCtrl) navMorphCtrl.morphTo(target);
+            syncHomeButtonInteractivity();
         }
 
         function clearSelectedCaseDitherTimeout() {
@@ -512,8 +521,8 @@
             }
             navMorphCtrl = createMorphController(homeBtn);
             syncHomeButtonIndicator();
-            homeBtn.style.cursor = 'pointer';
             homeBtn.addEventListener('click', function() {
+                if (window.matchMedia('(min-width: 1024px)').matches && selectedCaseIndex === null) return;
                 clearCaseSelection();
                 var viewport = document.querySelector('.page-slider-viewport');
                 if (window.snapToPage) window.snapToPage(0);
@@ -625,6 +634,7 @@
         }
 
         function onResize() {
+            syncHomeButtonInteractivity();
             if (typeof updateDeadZoneRef === 'function') updateDeadZoneRef();
         }
 
