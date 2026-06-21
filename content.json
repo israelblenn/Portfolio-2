@@ -15,7 +15,7 @@
     {
       "name": "The Harbour Agency",
       "description": "Building a website for a leading Sydney music agency designed around a unique modular page structure. It features a highly interactive roster brimming with dynamic animations that contrast bold Swiss-style geometry against a minimalist slate backdrop.",
-      "link": "#",
+      "link": "https://the-harbour-agency.up.railway.app/",
       "video": "assets/THA108030.mp4",
       "icon": "assets/1.svg",
       "colour": "#FF4338"
@@ -23,7 +23,7 @@
     {
       "name": "Mark Bo Chu",
       "description": "Designing and building a personal website and shop for Melbourne-based artist, writer and complexity scientist. Featuring novel layouts and engaging interactive experiences, grounded in minimalist design principles and UX sensibilities.",
-      "link": "#",
+      "link": "https://www.markbochu.com/art",
       "video": "assets/MBC108030.mp4",
       "icon": "assets/2.svg",
       "colour": "#0051FF"
@@ -31,7 +31,7 @@
     {
       "name": "Lismore Baptist",
       "description": "Re-imagining the visual identity of a local church — which involved creating a feature-rich website among multiple other pieces of branded material. The site includes a custom built database and platform that allows church members to stream archived sermons online.",
-      "link": "#",
+      "link": "https://www.lismorebaptist.org.au/",
       "video": "assets/LBC108030.mp4",
       "icon": "assets/3.svg",
       "colour": "#FFBA3A"

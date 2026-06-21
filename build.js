@@ -208,7 +208,15 @@ function renderWorkCases(cases, indent) {
         if (!caseItem || typeof caseItem !== 'object') return;
         const style = caseItem.colour ? ' style="background-color: ' + escapeHtmlAttr(caseItem.colour) + '"' : '';
         lines.push(pad + '<div class="work-case"' + style + '>');
-        lines.push(innerPad + '<p>' + escapeHtmlText(caseItem.description || '') + '</p>');
+        lines.push(innerPad + '<div class="work-case-copy">');
+        lines.push(innerPad + '    <p>' + escapeHtmlText(caseItem.description || '') + '</p>');
+        if (isPublicCaseUrl(caseItem.link)) {
+            lines.push(innerPad + '    <a class="case-link" href="' + escapeHtmlAttr(caseItem.link.trim()) +
+                '" target="_blank" rel="noopener noreferrer" aria-label="Open ' +
+                escapeHtmlAttr(caseItem.name || 'project') + ' in a new tab">' +
+                '<img src="assets/link.svg" alt="" aria-hidden="true"></a>');
+        }
+        lines.push(innerPad + '</div>');
         if (caseItem.video) {
             lines.push(innerPad + '<div class="dither-video dither-video--suppress-transition" style="aspect-ratio: 16 / 9;">');
             lines.push(innerPad + '    <canvas class="dither-video-canvas"></canvas>');
@@ -255,8 +263,17 @@ function renderNavBar(cases, indent) {
         const style = caseItem.colour ? ' style="background-color: ' + escapeHtmlAttr(caseItem.colour) + '"' : '';
         lines.push(
             pad + '<div class="nav-bar-case" data-expand="' + index + '"' + style + '>' +
-            escapeHtmlText(caseItem.name || '') + '</div>'
+            '<span class="nav-bar-case-label">' + escapeHtmlText(caseItem.name || '') + '</span>'
         );
+        if (isPublicCaseUrl(caseItem.link)) {
+            lines.push(
+                pad + '    <a class="case-link nav-bar-case-link" href="' + escapeHtmlAttr(caseItem.link.trim()) +
+                '" target="_blank" rel="noopener noreferrer" aria-label="Open ' +
+                escapeHtmlAttr(caseItem.name || 'project') + ' in a new tab">' +
+                '<img src="assets/link.svg" alt="" aria-hidden="true"></a>'
+            );
+        }
+        lines.push(pad + '</div>');
     });
     return lines.join('\n');
 }

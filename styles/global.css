@@ -154,6 +154,46 @@ canvas#life {
     }
 }
 
+.work-case-copy {
+    position: relative;
+}
+
+.case-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    color: inherit;
+    transition: opacity 0.2s ease;
+    flex-shrink: 0;
+
+    & img {
+        display: block;
+        width: 16px;
+        height: 16px;
+    }
+
+    &:hover {
+        opacity: 0.6;
+    }
+}
+
+.work-case-copy .case-link {
+    position: absolute;
+    right: -8px;
+    bottom: -8px;
+}
+
+/* .work-case-copy:has(.case-link) > p {
+    padding-right: 32px;
+    padding-bottom: 32px;
+} */
+
+.nav-bar-case-link {
+    display: none;
+}
+
 .copyright {
     position: absolute;
     bottom: 2rem;
@@ -444,6 +484,22 @@ canvas#life {
 
     #case-description.desc-fade-out {
         opacity: 0;
+    }
+
+    .nav-bar-case-link {
+        display: none;
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+
+    .nav-bar-case.nav-bar-case--link-visible .nav-bar-case-link {
+        display: flex;
+        animation: nav-case-link-fade-in 0.32s ease forwards;
+    }
+
+    @keyframes nav-case-link-fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
 
 

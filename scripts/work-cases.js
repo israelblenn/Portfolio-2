@@ -17,6 +17,15 @@
         var selectedCaseDitherTimeout = null;
         var updateDeadZoneRef = null;
         var descLeftForIndexRef = null;
+        var navCaseLinkRevealTimeout = null;
+        var NAV_CASE_EXPAND_MS = 320;
+
+        function clearNavCaseLinkRevealTimeout() {
+            if (navCaseLinkRevealTimeout !== null) {
+                clearTimeout(navCaseLinkRevealTimeout);
+                navCaseLinkRevealTimeout = null;
+            }
+        }
 
         function createCaseVideoElement(videoPath, offscreen) {
             if (!videoPath) return null;
@@ -40,6 +49,68 @@
                 vid.style.pointerEvents = 'none';
             }
             return vid;
+        }
+
+        function isExternalCaseLink(link) {
+            if (!link || typeof link !== 'string') return false;
+            var trimmed = link.trim();
+            return trimmed.length > 0 && trimmed !== '#';
+        }
+
+        function clickedCaseLink(e) {
+            return !!(e.target && typeof e.target.closest === 'function' && e.target.closest('a.case-link'));
+        }
+
+        function bindCaseLinkClickGuards(root) {
+            if (!root) return;
+            root.querySelectorAll('a.case-link:not([data-case-link-bound])').forEach(function(link) {
+                link.setAttribute('data-case-link-bound', '');
+                link.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+        }
+
+        function createCaseLinkButton(caseItem) {
+            var a = document.createElement('a');
+            a.className = 'case-link';
+            a.href = caseItem.link.trim();
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.setAttribute('aria-label', 'Open ' + (caseItem.name || 'project') + ' in a new tab');
+            a.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+            var img = document.createElement('img');
+            img.src = 'assets/link.svg';
+            img.alt = '';
+            img.setAttribute('aria-hidden', 'true');
+            a.appendChild(img);
+            return a;
+        }
+
+        function syncNavCaseExpandedState() {
+            var navBar = document.getElementById('nav-bar');
+            var expanded = navBar ? navBar.dataset.expanded : 'none';
+            clearNavCaseLinkRevealTimeout();
+            navBarCaseItems.forEach(function(el) {
+                el.classList.remove('nav-bar-case--link-visible');
+            });
+            if (expanded === 'none') return;
+            var expandedIndex = parseInt(expanded, 10);
+            if (isNaN(expandedIndex) || !navBarCaseItems[expandedIndex]) return;
+            navCaseLinkRevealTimeout = setTimeout(function() {
+                navCaseLinkRevealTimeout = null;
+                if (!navBar || navBar.dataset.expanded !== String(expandedIndex)) return;
+                var caseNav = navBarCaseItems[expandedIndex];
+                if (!caseNav || !caseNav.querySelector('.nav-bar-case-link')) return;
+                caseNav.classList.add('nav-bar-case--link-visible');
+            }, NAV_CASE_EXPAND_MS);
+        }
+
+        function getCaseByIndex(index) {
+            if (!Array.isArray(content.cases)) return null;
+            return content.cases[index] || null;
         }
 
         function syncCaseActiveIndicator() {
@@ -372,6 +443,7 @@
             }
 
             syncNavSelectedState();
+            syncNavCaseExpandedState();
 
             if (!previewModule) return;
             if (selectedCaseIndex === null) {
@@ -399,6 +471,7 @@
             var navBar = document.getElementById('nav-bar');
             if (navBar) navBar.dataset.expanded = 'none';
             if (navBarDesc) navBarDesc.textContent = '';
+            syncNavCaseExpandedState();
             if (typeof updateDeadZoneRef === 'function') updateDeadZoneRef();
             syncNavSelectedState();
             if (previewModule) previewModule.renderSelectedCase();
@@ -413,7 +486,10 @@
                     tintHex: caseItem.colour || '#ffffff',
                     tintStrength: 1.0
                 }, existingWrapper);
-                card.addEventListener('click', function() { selectCaseByIndex(caseIndex); });
+                card.addEventListener('click', function(e) {
+                    if (clickedCaseLink(e)) return;
+                    selectCaseByIndex(caseIndex);
+                });
                 shaderCases.push({ card: card, wrapper: shaderVideo });
                 if (!existingWrapper) card.appendChild(shaderVideo);
             } else if (!existingWrapper) {
@@ -433,6 +509,7 @@
                 validCases.forEach(function(caseItem, caseIndex) {
                     var card = existingCards[caseIndex];
                     if (!card) return;
+                    bindCaseLinkClickGuards(card);
                     if (caseItem.video) {
                         var existingWrapper = card.querySelector('.dither-video');
                         var videoEl = card.querySelector('video');
@@ -448,9 +525,18 @@
                 card.className = 'work-case';
                 if (caseItem.colour) card.style.backgroundColor = caseItem.colour;
 
+                var copy = document.createElement('div');
+                copy.className = 'work-case-copy';
+
                 var desc = document.createElement('p');
                 desc.textContent = caseItem.description || '';
-                card.appendChild(desc);
+                copy.appendChild(desc);
+
+                if (isExternalCaseLink(caseItem.link)) {
+                    copy.appendChild(createCaseLinkButton(caseItem));
+                }
+
+                card.appendChild(copy);
 
                 if (caseItem.video) {
                     var vid = createCaseVideoElement(caseItem.video, false);
@@ -502,6 +588,10 @@
                 return left;
             }
 
+            function setDescriptionContent(caseItem) {
+                navBarDesc.textContent = (caseItem && caseItem.description) || '';
+            }
+
             updateDeadZoneRef = updateDeadZone;
             descLeftForIndexRef = descLeftForIndex;
 
@@ -537,11 +627,26 @@
                     caseNav.className = 'nav-bar-case';
                     caseNav.setAttribute('data-expand', String(index));
                     if (caseItem.colour) caseNav.style.backgroundColor = caseItem.colour;
-                    caseNav.textContent = caseItem.name || '';
+                    var caseLabel = document.createElement('span');
+                    caseLabel.className = 'nav-bar-case-label';
+                    caseLabel.textContent = caseItem.name || '';
+                    caseNav.appendChild(caseLabel);
                     navBar.appendChild(caseNav);
+                } else if (!caseNav.querySelector('.nav-bar-case-label')) {
+                    var existingLabel = document.createElement('span');
+                    existingLabel.className = 'nav-bar-case-label';
+                    existingLabel.textContent = caseNav.textContent;
+                    caseNav.textContent = '';
+                    caseNav.appendChild(existingLabel);
+                }
+                if (isExternalCaseLink(caseItem.link) && !caseNav.querySelector('.nav-bar-case-link')) {
+                    var caseNavLink = createCaseLinkButton(caseItem);
+                    caseNavLink.classList.add('nav-bar-case-link');
+                    caseNav.appendChild(caseNavLink);
                 }
                 caseNav.style.cursor = 'pointer';
-                caseNav.addEventListener('click', function() {
+                caseNav.addEventListener('click', function(e) {
+                    if (clickedCaseLink(e)) return;
                     var isDesktop = window.matchMedia('(min-width: 1024px)').matches;
                     var wasExpanded = navBar.dataset.expanded === String(index);
                     selectCaseByIndex(index);
@@ -549,6 +654,7 @@
                     if (isDesktop) {
                         if (selectedCaseIndex === null) {
                             navBar.dataset.expanded = 'none';
+                            syncNavCaseExpandedState();
                             navBarDesc.classList.add('desc-fade-out');
                             setTimeout(function() {
                                 navBarDesc.textContent = '';
@@ -559,10 +665,11 @@
                         }
                         if (wasExpanded) return;
                         navBar.dataset.expanded = String(index);
+                        syncNavCaseExpandedState();
                         navBarDesc.classList.add('desc-fade-out');
                         setTimeout(function() {
                             navBarDesc.style.left = descLeftForIndex(index) + 'px';
-                            navBarDesc.textContent = caseItem.description || '';
+                            setDescriptionContent(caseItem);
                             navBarDesc.classList.remove('desc-fade-out');
                             requestAnimationFrame(updateDeadZone);
                         }, 320);
@@ -584,6 +691,9 @@
                 });
                 navBarCaseItems.push(caseNav);
             });
+
+            syncNavCaseExpandedState();
+            bindCaseLinkClickGuards(navBar);
 
             if (typeof window.initDesktopContact === 'function') {
                 window.initDesktopContact({
@@ -684,10 +794,7 @@
 
         return {
             getSelectedCaseIndex: function() { return selectedCaseIndex; },
-            getCaseByIndex: function(index) {
-                if (!Array.isArray(content.cases)) return null;
-                return content.cases[index] || null;
-            },
+            getCaseByIndex: getCaseByIndex,
             selectCaseByIndex: selectCaseByIndex,
             clearCaseSelection: clearCaseSelection,
             measureNavBarWidths: measureNavBarWidths,
